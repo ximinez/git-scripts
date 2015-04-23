@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for dir in /C/Dev*/* 
+do
+	if [ -d ${dir}/.git ] 
+	then
+		echo $dir 
+		pushd $dir > /dev/null 
+		git fetch --all -p
+		popd > /dev/null 
+	fi 
+done
+

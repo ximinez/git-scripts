@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ -z $( type -p grep ) ]
+then
+  PATH="${PATH}:/bin"
+fi
+
+for dir in /C/Dev*/* 
+do
+	if [ -d ${dir}/.git ] 
+	then
+		echo $dir 
+		pushd $dir > /dev/null 
+    git branch -vv | grep ": gone" | awk '{ print $1 }' | xargs -r git branch -D
+		popd > /dev/null 
+	fi 
+done
+
