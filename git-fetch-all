@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for dir in /C/Dev*/* 
+for dir in ~/dev*/*
 do
 	if [ -d ${dir}/.git ] 
 	then
