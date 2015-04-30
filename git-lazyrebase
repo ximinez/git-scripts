@@ -1,0 +1,3 @@
+#!/bin/sh
+
+git push -f && git checkout "$1" && git pull && git rebase -i upstream/develop 
