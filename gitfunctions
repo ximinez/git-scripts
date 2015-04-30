@@ -1,0 +1,6 @@
+_git_lazyrebase() {
+_git_checkout;
+};
+_git_review() {
+_git_checkout;
+};
