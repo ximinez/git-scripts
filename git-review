@@ -1,0 +1,10 @@
+#!/bin/sh
+
+[ $# = 2 ] && \
+  git fetch $1 && \
+    ( git checkout -b $1--$2 -t $1/$2 || \
+      git checkout $1--$2 ) && \
+      git pull && \
+        exit 0 || \
+echo "usage: git review <remote> <branch>" >&2 && \
+  exit 1
