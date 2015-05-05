@@ -1,3 +1,10 @@
+# Source this file from your ~/.bashrc or similar to
+# enable autocomplete for the other commands.
+#    if [ -x [location]/gitfunctions ]
+#    then
+#      source [location]/gitfunctions
+#    fi
+
 _git_lazyrebase() {
 _git_checkout;
 };
