@@ -1,9 +1,17 @@
 #!/bin/sh
 
-[ $# = 2 ] && \
-  git fetch $1 && \
-    ( git checkout -b $1--$2 -t $1/$2 || \
-      git checkout $1--$2 ) && \
+params="${@}"
+
+# Split full branch names (eg. "<remote>/<branch>") into parts
+[ ${#params[@]} = 1 ] && \
+  params=( $( echo "${params[@]}" | tr "/" "\n" ) )
+
+# Set up or update the branch
+[ ${#params[@]} = 2 ] && \
+  git fetch ${params[0]} && \
+    ( git checkout -b ${params[0]}--${params[1]} \
+      -t ${params[0]}/${params[1]} || \
+      git checkout ${params[0]}--${params[1]} ) && \
       git pull && \
         exit 0 || \
 echo "usage: git review <remote> <branch>" >&2 && \
