@@ -12,6 +12,7 @@ do
 		echo $dir 
 		pushd $dir > /dev/null 
     git branch -vv | grep ": gone" | awk '{ print $1 }' | xargs -r git branch -D
+    git gc
 		popd > /dev/null 
 	fi 
 done
