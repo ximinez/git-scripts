@@ -11,3 +11,6 @@ _git_checkout;
 _git_review() {
 _git_checkout;
 };
+_git_rollback() {
+_git_add;
+};
