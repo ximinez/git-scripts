@@ -1,7 +1,10 @@
 #!/bin/sh
 
-upstream=${2:-upstream/develop}
+# upstream=${2:-upstream/develop}
+remote=${2:-upstream}
+refspec=${3:-develop}
 git push -f && \
   git checkout "$1" && \
     git pull && \
-      git rebase -i "${upstream}"
+      # git rebase "${upstream}"
+      git pull "${remote}" "${refspec}"
