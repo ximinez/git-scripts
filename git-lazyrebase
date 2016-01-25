@@ -3,7 +3,7 @@
 # upstream=${2:-upstream/develop}
 remote=${2:-upstream}
 refspec=${3:-develop}
-git push -f && \
+git safepush && \
   git checkout "$1" && \
     git pull && \
       # git rebase "${upstream}"

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+git diff --quiet --staged &&
+  ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
+		git push --force-with-lease "${@}"
+# https://developer.atlassian.com/blog/2015/04/force-with-lease/
+
