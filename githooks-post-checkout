@@ -1,0 +1,4 @@
+#!/bin/sh
+
+git verify-commit ${2} || echo -e '*\n*\n* GPG signature not verified\n*\n*'
+
