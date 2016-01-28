@@ -14,6 +14,6 @@ _git_checkout;
 _git_rollback() {
 _git_add;
 };
-_git_safepush() {
+_git_signpush() {
 _git_push;
 };
