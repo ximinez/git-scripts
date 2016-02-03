@@ -1,10 +1,17 @@
 #!/bin/sh
 
 # upstream=${2:-upstream/develop}
-remote=${2:-upstream}
-refspec=${3:-develop}
-git signpush && \
-  git checkout "$1" && \
+set -e
+remote=${1:-upstream}
+refspec=${2:-develop}
+shift 2
+for b in "${@}"
+do
+  echo -e "\n\n${b}\n\n"
+  git checkout "${b}" && \
     git pull && \
       # git rebase "${upstream}"
-      git pull "${remote}" "${refspec}"
+      git pull "${remote}" "${refspec}" && \
+        git signpush || \
+          exit 1
+done
