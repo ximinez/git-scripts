@@ -21,19 +21,19 @@ then
       continue
     fi
     pushd ${repo}
-
-    for unity in ON OFF
-    do
-      target=msvc.${unity}
-      mkdir -pv build/cmake/${target}
-      pushd build/cmake/${target}
-      # I like asserts.
-      set -x
-      cmake -G"Visual Studio 15 2017 Win64" -Dunity=${unity} -Dassert=true ../../..
-      set +x
-      popd
+    for c in gcc clang
+      do
+      for debug in debug release
+      do
+        target=${c}.${debug}
+        mkdir -pv build/cmake/${target}
+        pushd build/cmake/${target}
+        echo "Target: $target"
+        # I like asserts
+        cmake -Dtarget=$target -Dassert=true ../../..
+        popd
+      done
     done
-
     popd
   done
   # Update any custom / non-build CMake folders
