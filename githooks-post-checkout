@@ -7,4 +7,30 @@ error()
   echo -e ' *\n  *\n *\n*'
 }
 
+if [[ -f CMakeLists.txt ]]
+then
+  for repo in . extras/*
+  do
+    if [[ ! -d ${repo} ]]
+    then
+      continue
+    fi
+    pushd ${repo}
+    for target in unity nounity
+    do
+      mkdir -p build/${target}
+      pushd build/${target}
+      echo "Target: $target"
+      cmake -G"Visual Studio 14 2015 Win64" -Dtarget=$target ../..
+      popd
+    done
+    popd
+  done
+fi
+
 git verify-commit ${2} || error
+
+if git remote | grep -q upstream
+then
+	git log --oneline -1 ..upstream/develop
+fi
