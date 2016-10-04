@@ -9,16 +9,19 @@ error()
 
 if [[ -f CMakeLists.txt ]]
 then
-  for repo in . extras/*
+  for repo in . $( git config --file .gitmodules --get-regexp path | \
+    cut -d\  -f2 )
   do
-    if [[ ! -d ${repo} ]]
+    if [[ ! -d ${repo} || ! -f ${repo}/CMakeLists.txt || \
+      ! -f ${repo}/.gitignore || \
+      $( grep -cw build ${repo}/.gitignore ) == 0 ]]
     then
       continue
     fi
     pushd ${repo}
     for target in unity nounity
     do
-      mkdir -p build/${target}
+      mkdir -pv build/${target}
       pushd build/${target}
       echo "Target: $target"
       cmake -G"Visual Studio 14 2015 Win64" -Dtarget=$target ../..
