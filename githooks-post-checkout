@@ -33,7 +33,7 @@ fi
 
 git verify-commit ${2} || error
 
-if git remote | grep -q upstream
+if git branch -r | grep -q upstream/develop
 then
 	git log --oneline -1 ..upstream/develop
 fi
