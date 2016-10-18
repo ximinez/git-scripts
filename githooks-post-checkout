@@ -29,6 +29,9 @@ then
     done
     popd
   done
+  # Update any custom / non-build CMake folders
+  find . -path '*/build/*unity' -prune -false -o -name CMakeCache.txt -print0 | \
+    xargs -r0 -n1 -P4 cmake
 fi
 
 git verify-commit ${2} || error
