@@ -19,14 +19,12 @@ then
       continue
     fi
     pushd ${repo}
-    for target in unity nounity
-    do
-      mkdir -pv build/${target}
-      pushd build/${target}
-      echo "Target: $target"
-      cmake -G"Visual Studio 14 2015 Win64" -Dtarget=$target ../..
-      popd
-    done
+
+    mkdir -pv build/cmake
+    pushd build/cmake
+    cmake -G"Visual Studio 14 2015 Win64" ../..
+    popd
+
     popd
   done
   # Update any custom / non-build CMake folders
