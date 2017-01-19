@@ -12,6 +12,7 @@ do
     git pull && \
       # git rebase "${upstream}"
       git pull "${remote}" "${refspec}" && \
-        git signpush || \
-          exit 1
+      	echo -e "\nPushing ${b}" && \
+        	git signpush || \
+          		exit 1
 done
