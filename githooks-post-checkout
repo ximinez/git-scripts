@@ -22,7 +22,8 @@ then
 
     mkdir -pv build/cmake
     pushd build/cmake
-    cmake -G"Visual Studio 14 2015 Win64" ../..
+    # I like asserts.
+    cmake -G"Visual Studio 14 2015 Win64" -Dassert=true ../..
     popd
 
     popd
