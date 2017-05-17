@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# for dir in ../*/.git/hooks ; do \cp -v githooks-post-checkout ${dir}/post-checkout ; done
+
 error()
 {
   echo -e '*\n *\n  *\n *'
@@ -20,16 +22,16 @@ then
     fi
     pushd ${repo}
 
-    mkdir -pv build/cmake
-    pushd build/cmake
+    mkdir -pv build/cmake/msvc
+    pushd build/cmake/msvc
     # I like asserts.
-    cmake -G"Visual Studio 14 2015 Win64" -Dassert=true ../..
+    cmake -G"Visual Studio 14 2015 Win64" -Dassert=true ../../..
     popd
 
     popd
   done
   # Update any custom / non-build CMake folders
-  find . -path '*/build/*cmake' -prune -false -o -name CMakeCache.txt -print0 | \
+  find . -path '*/build/cmake/msvc' -prune -false -o -name CMakeCache.txt -print0 | \
     xargs -r0 -n1 -P4 cmake
 fi
 
