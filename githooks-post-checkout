@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# for dir in ../*/.git/hooks ; do \cp -v githooks-post-checkout ${dir}/post-checkout ; done
+# To install
+# for dir in ../*/.git ; do echo $dir ; ln -vsf $( pwd )/githooks-post-checkout $dir/hooks/post-checkout ; done
 
 error()
 {
