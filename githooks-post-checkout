@@ -24,15 +24,21 @@ then
     pushd ${repo}
     for c in gcc clang
       do
-      for debug in debug release
+      for debug in Debug Release
       do
-        target=${c}.${debug}
-        mkdir -pv build/cmake/${target}
-        pushd build/cmake/${target}
-        echo "Target: $target"
-        # I like asserts
-        cmake -Dtarget=$target -Dassert=true ../../..
-        popd
+        for unity in ON OFF
+        do
+          cxx=${c/gcc/g}++
+          target=${c}.${debug}.${unity}
+          mkdir -pv build/cmake/${target}
+          pushd build/cmake/${target}
+          echo -e "\n\n\nTarget: $target"
+          # I like asserts
+          set -x
+          cmake -Dunity=${unity} -DCMAKE_BUILD_TYPE=${debug} -DCMAKE_C_COMPILER=${c} -DCMAKE_CXX_COMPILER=${cxx} -Dassert=true -DBOOST_ROOT=$BOOST_ROOT ../../..
+          set +x
+          popd
+        done
       done
     done
     popd
