@@ -1,6 +1,10 @@
 #!/bin/bash
 
 # for dir in ../*/.git/hooks ; do \cp -v githooks-post-checkout ${dir}/post-checkout ; done
+#
+# OR
+#
+# mkdir -p ~/.git/hooks/ && \cp -v githooks-post-checkout ~/.git/hooks/post-checkout && git config --global core.hooksPath ~/.git/hooks/
 
 error()
 {
