@@ -2,6 +2,10 @@
 
 # To install
 # for dir in ../*/.git ; do echo $dir ; ln -vsf $( pwd )/githooks-post-checkout $dir/hooks/post-checkout ; done
+#
+# OR
+#
+# mkdir -p ~/.git/hooks/ && ln -vsf $( pwd )/githooks-post-checkout ~/.git/hooks/post-checkout && git config --global core.hooksPath ~/.git/hooks/
 
 error()
 {
