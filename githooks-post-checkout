@@ -39,7 +39,7 @@ then
           echo -e "\n\n\nTarget: $target"
           # I like asserts
           set -x
-          cmake -Dunity=${unity} -DCMAKE_BUILD_TYPE=${debug} -DCMAKE_C_COMPILER=${c} -DCMAKE_CXX_COMPILER=${cxx} -Dassert=true -DBOOST_ROOT=$BOOST_ROOT ../../..
+          cmake -Dunity=${unity} -DCMAKE_BUILD_TYPE=${debug} -DCMAKE_C_COMPILER=${c} -DCMAKE_CXX_COMPILER=${cxx} -Dassert=true -DBOOST_ROOT=$BOOST_ROOT -Dwerr=ON ../../..
           set +x
           popd
         done
