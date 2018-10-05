@@ -41,7 +41,8 @@ then
     popd
   done
   # Update any custom / non-build CMake folders
-  find . -path '*/build/cmake' -prune -false -o -name CMakeCache.txt -print0 | \
+  find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
+    -name CMakeCache.txt -print0 | \
     xargs -r0 -n1 -P4 cmake
 fi
 
