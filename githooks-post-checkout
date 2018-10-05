@@ -37,9 +37,9 @@ then
           mkdir -pv build/cmake/${target}
           pushd build/cmake/${target}
           echo -e "\n\n\nTarget: $target"
-          # I like asserts
+          # I like asserts, and ccache
           set -x
-          cmake -Dunity=${unity} -DCMAKE_BUILD_TYPE=${debug} -DCMAKE_C_COMPILER=${c} -DCMAKE_CXX_COMPILER=${cxx} -Dassert=true -DBOOST_ROOT=$BOOST_ROOT -Dwerr=ON ../../..
+          cmake -Dunity=${unity} -DCMAKE_BUILD_TYPE=${debug} -DCMAKE_C_COMPILER=${c} -DCMAKE_CXX_COMPILER=${cxx} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -Dassert=true -DBOOST_ROOT=$BOOST_ROOT -Dwerr=ON ../../..
           set +x
           popd
         done
@@ -48,7 +48,8 @@ then
     popd
   done
   # Update any custom / non-build CMake folders
-  find . -path '*/build/cmake' -prune -false -o -name CMakeCache.txt -print0 | \
+  find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
+    -name CMakeCache.txt -print0 | \
     xargs -r0 -n1 -P4 cmake
 fi
 
