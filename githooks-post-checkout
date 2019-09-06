@@ -13,7 +13,7 @@ error()
   echo -e ' *\n  *\n *\n*'
 }
 
-if [[ -f CMakeLists.txt ]]
+if [[ -f CMakeLists.txt ]] && [[ ! ( "$(pwd)" =~ ".nih_c" ) ]]
 then
   for repo in . $( git config --file .gitmodules --get-regexp path | \
     cut -d\  -f2 )
@@ -33,7 +33,7 @@ then
       pushd build/cmake/${target}
       # I like asserts.
       set -x
-      cmake -G"Visual Studio 15 2017 Win64" -Dunity=${unity} -Dassert=true ../../..
+      cmake -G"Visual Studio 15 2017 Win64" -Dunity=${unity} -Dassert=true -DFETCHCONTENT_QUIET=OFF ../../..
       set +x
       popd
     done
