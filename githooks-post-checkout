@@ -13,8 +13,9 @@ error()
   echo -e ' *\n  *\n *\n*'
 }
 
-if [[ -f CMakeLists.txt ]] && [[ ! ( "$(pwd)" =~ ".nih_c" ) ]]
+if [[ -f CMakeLists.txt ]] && [[ ! ( "$(pwd)" =~ "_deps" ) ]] && [[ ! ( "$(pwd)" =~ ".nih_c" ) ]]
 then
+  echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n"
   for repo in . $( git config --file .gitmodules --get-regexp path | \
     cut -d\  -f2 )
   do
@@ -33,7 +34,8 @@ then
       pushd build/cmake/${target}
       # I like asserts.
       set -x
-      cmake -G"Visual Studio 15 2017 Win64" -Dunity=${unity} -Dassert=true -DFETCHCONTENT_QUIET=OFF ../../..
+      # Add this if external projects hang -DFETCHCONTENT_QUIET=OFF
+      cmake -G"Visual Studio 15 2017 Win64" -Dunity=${unity} -Dassert=true ../../..
       set +x
       popd
     done
