@@ -32,7 +32,8 @@ then
       do
         for unity in ON OFF
         do
-          cxx=${c/gcc/g}++
+          cxx=${c/gcc/g++}
+          cxx=${cxx/clang/clang++}
           target=${c}.${debug}.${unity}
           mkdir -pv build/cmake/${target}
           pushd build/cmake/${target}
