@@ -4,7 +4,7 @@ params=("${@}")
 
 # Split full branch names (eg. "<remote>/<branch>") into parts
 [ ${#params[@]} = 1 ] && \
-  params=( $( echo "${params[@]}" | tr "/" "\n" ) )
+  params=( $( echo "${params[@]}" | sed "s/\//\n/" ) )
 
 # Set up or update the branch
 [ ${#params[@]} = 2 ] && \

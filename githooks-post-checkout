@@ -15,8 +15,10 @@ error()
 }
 
 if [[ -f CMakeLists.txt ]] && \
-  [[ ! ( $(pwd) =~ ".nih_c" || $(pwd) =~ "build/cmake" ) ]]
+  [[ ! ( $(pwd) =~ ".nih_c" || $(pwd) =~ "build/cmake" || \
+  $(pwd) =~ "_deps" ) ]]
 then
+  echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n"
   for repo in . $( git config --file .gitmodules --get-regexp path | \
     cut -d\  -f2 )
   do
