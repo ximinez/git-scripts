@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Searching for .git without checking type handles git worktrees.
+# TODO: Make the ignore list a param, but for now this works.
+find $1 \
+  -iname .nih_c -prune -o \
+  -iname .git \
+  \( \
+  -execdir git diff --quiet \; \
+  -o \
+  -printf "%h\n" \
+  -execdir git status -s -b \; \
+  -exec echo \; \
+  \)
