@@ -3,14 +3,22 @@
 # Searching for .git without checking type handles git worktrees.
 # TODO: Make the ignore list a param, but for now this works.
 
+if [[ $1 == "--remote" ]]
+then
+  shift
+  git status -s -b | grep -q -e ahead -e behind && exit 1
+  exit 0
+fi
+
 find $1 \
   -iname .nih_c -prune -o \
   -iname .git \
   -execdir git rev-parse \; \
   \( \
-  -execdir git diff --quiet \; \
-  -o \
-  -printf "%h\n" \
-  -execdir git status -s -b \; \
-  -exec echo \; \
+    -execdir git diff --quiet \; \
+    -execdir $0 --remote \; \
+    -o \
+    -printf "%h\n" \
+    -execdir git status -s -b \; \
+    -exec echo \; \
   \)
