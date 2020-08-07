@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-params="${@}"
+params=( "${@}" )
 
 # Split full branch names (eg. "<remote>/<branch>") into parts
 [ ${#params[@]} = 1 ] && \

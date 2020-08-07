@@ -5,7 +5,7 @@ then
   PATH="${PATH}:/bin"
 fi
 
-for dir in /C/Dev*/* 
+for dir in ~/dev*/* /C/Dev*/*
 do
 	if [ -d ${dir}/.git ] 
 	then
