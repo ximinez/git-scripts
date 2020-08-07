@@ -6,7 +6,7 @@
 if [[ $1 == "--remote" ]]
 then
   shift
-  git status -s -b | grep -q -e ahead -e behind && exit 1
+  git status -s -b | grep -q -e '\[ahead' -e '\[behind' && exit 1
   exit 0
 fi
 
