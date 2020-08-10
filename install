@@ -5,12 +5,12 @@
 hookspath=$( git config --global core.hookspath )
 if [ -z "${hookspath}" ]
 then
-  hookspath=~/.git/hooks/
+  hookspath=${HOME}/.git/hooks/
   git config --global core.hookspath "${hookspath}"
 fi
 if [ ! -d "${hookspath}" ]
 then
-  mkdir -p "${hookspath}"
+  mkdir -pv "${hookspath}"
 fi
 
 for file in *
@@ -18,7 +18,7 @@ do
   if [[ "${file}" == "install" || "${file}" =~ "~" || \
     "${file}" =~ "rippled" || ! "${file}" =~ "git" ]]
   then
-    echo -e "Skipping ${file}\n"
+    # echo -e "Skipping ${file}\n"
     continue
   fi
 
@@ -26,14 +26,17 @@ do
   then
     dest="${hookspath}/$( echo ${file} | sed 's/^githooks-//' )"
   else
-    dest=~/"bin/${file}"
+    dest="${HOME}/bin/${file}"
   fi
 
-  if [[ -e "${dest}" ]] && cmp "${file}" "${dest}"
+  if [[ -e "${dest}" ]]
   then
-    echo "\"${file}\" already found at ${dest}. Will not overwrite."
-    ls -l "${dest}"
-    echo
+    if ! cmp "${file}" "${dest}"
+    then
+      echo -e "\"${file}\" already found at ${dest}. Will not overwrite."
+      # ls -l "${file}" "${dest}"
+      echo -e "\n\n"
+    fi
     continue
   fi
 
