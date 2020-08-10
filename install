@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Run this after a fresh clone to do quick setup
+
+hookspath=$( git config --global core.hookspath )
+if [ -z "${hookspath}" ]
+then
+  hookspath=~/.git/hooks/
+  git config --global core.hookspath "${hookspath}"
+fi
+if [ ! -d "${hookspath}" ]
+then
+  mkdir -p "${hookspath}"
+fi
+
+for file in *
+do
+  if [[ "${file}" == "install" || "${file}" =~ "~" || \
+    "${file}" =~ "rippled" || ! "${file}" =~ "git" ]]
+  then
+    echo -e "Skipping ${file}\n"
+    continue
+  fi
+
+  if [[ "${file}" =~ "githooks-" ]]
+  then
+    dest="${hookspath}/$( echo ${file} | sed 's/^githooks-//' )"
+  else
+    dest=~/"bin/${file}"
+  fi
+
+  if [[ -e "${dest}" ]] && cmp "${file}" "${dest}"
+  then
+    echo "\"${file}\" already found at ${dest}. Will not overwrite."
+    ls -l "${dest}"
+    echo
+    continue
+  fi
+
+  ln -sv "$(pwd)/${file}" "${dest}"
+  echo
+done
