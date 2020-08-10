@@ -61,7 +61,8 @@ then
           then
             extra[${#extra[@]}]="-GVisual Studio 15 2017 Win64"
           else
-            extra[${#extra[@]}]="-DCMAKE_C_COMPILER=${c} -DCMAKE_CXX_COMPILER=${cxx}"
+            extra[${#extra[@]}]="-DCMAKE_C_COMPILER=${c}"
+            extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER=${cxx}"
           fi
           if [ -z "${debug}"  -o "${debug}" == "unified" ]
           then
