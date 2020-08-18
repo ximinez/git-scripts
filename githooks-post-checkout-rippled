@@ -5,7 +5,8 @@
 # Reformat on checkout, if the current branch has been formatted already
 if git merge-base --is-ancestor 50760c693510894ca368e90369b0cc2dabfd07f3 HEAD
 then
-  echo -e "\nCalling clang-format on all source files"
+  compare=$( [ "$1" = "$2" ] && echo "upstream/develop" || echo "$1" )
+  echo -e "\nFormatting files changed since $compare"
   # Uncomment the following line in Windows, and confirm the correct path
   # to your LLVM install. But note that there are incompatibilities with
   # the Windows version so you may not want to use this hook in Windows.
@@ -13,7 +14,7 @@ then
   # find src/ripple src/test -type f \! -name 'AccountTxPaging.cpp' \( \
   #   -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 \
   #   | xargs -0 clang-format -i
-  git-clang-format --extensions c,cpp,h,cxx,ipp $2
+  git-clang-format --extensions c,cpp,h,cxx,ipp $compare
 else
   echo -e "\nNot formatting code on older branch"
 fi
