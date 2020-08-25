@@ -14,6 +14,8 @@ if [ -z "${hookspath}" ]
 then
   hookspath=${HOME}/.git/hooks/
   git config --global core.hookspath "${hookspath}"
+else
+  hookspath=${hookspath/#~\//${HOME}\/}
 fi
 if [ ! -d "${hookspath}" ]
 then
