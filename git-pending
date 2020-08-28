@@ -6,19 +6,37 @@
 if [[ $1 == "--remote" ]]
 then
   shift
-  git status -s -b | grep -q -e '\[ahead' -e '\[behind' && exit 1
+  [[ $# == 1 ]] || exit 1
+  tmp=$1
+  shift
+  # If in a valid git dir, succeeds, so continue
+  # If in an invalid git dir, fails, so exit with success
+  git status -s -b >& "${tmp}" || exit 0
+  # If grep finds matches, succeeds, so exit with a failure.
+  # If no matches, succeeds, fails, so continue
+  grep -q -e '\[ahead' -e '\[behind' "${tmp}" && exit 1
+  # If there are no diffs, succeeds, so continue.
+  # If there are diffs, fails, so exit with a failure.
+  git diff --quiet >& /dev/null || exit 1
+  # If there are no problems, succeeds, so continue.
+  # If there are problems, fails, so exit with a failure.
+  git diff --check >& /dev/null || exit 1
   exit 0
 fi
+
+tmp=$(mktemp)
 
 find $1 \
   -iname .nih_c -prune -o \
   -iname .git \
   -execdir git rev-parse \; \
   \( \
-    -execdir git diff --quiet \; \
-    -execdir $0 --remote \; \
+    -execdir $0 --remote "${tmp}" \; \
     -o \
     -printf "%h\n" \
     -execdir git status -s -b \; \
+    -execdir git diff --check \; \
     -exec echo \; \
   \)
+
+rm -f "${tmp}"
