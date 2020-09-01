@@ -1,5 +1,8 @@
 #!/bin/sh
 
+git rev-parse --abbrev-ref --symbolic-full-name "@{u}" > /dev/null 2>&1 &&
+  git fetch || echo New branch
+
 git diff --quiet --staged &&
   ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
     ( git push --force-with-lease "${@}" || git push "${@}" )
