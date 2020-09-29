@@ -3,7 +3,8 @@
 ~/.git/hooks/post-checkout "${@}"
 
 # Reformat on checkout, if the current branch has been formatted already
-if git merge-base --is-ancestor 50760c693510894ca368e90369b0cc2dabfd07f3 HEAD
+if git merge-base --is-ancestor 50760c693510894ca368e90369b0cc2dabfd07f3 HEAD \
+  && [ -f .clang-format ]
 then
   compare=$( [ "$1" = "$2" ] && echo "upstream/develop" || echo "$1" )
   echo -e "\nFormatting files changed since $compare"
