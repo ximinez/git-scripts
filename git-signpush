@@ -1,10 +1,22 @@
-#!/bin/sh
+#!/bin/bash
+
+branchname=$( git rev-parse --abbrev-ref --symbolic-full-name "@" )
 
 git rev-parse --abbrev-ref --symbolic-full-name "@{u}" > /dev/null 2>&1 &&
   git fetch || echo New branch
 
+unset ci
+if [[ "${1}" == "-ci" ]]
+then
+  shift
+  ci=1
+fi
+
 git diff --quiet --staged &&
   ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
-    ( git push --force-with-lease "${@}" || git push "${@}" )
+    ( git push --force-with-lease "${@}" || git push "${@}" ||
+      git push --set-upstream origin "${branchname}" ) &&
+    ( [[ -v ci ]] &&
+      git push --force-with-lease ci "${branchname}":"ed-${branchname}" )
 # https://developer.atlassian.com/blog/2015/04/force-with-lease/
 
