@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Usage: git allpull directory [...]
+
+for dir in "${@}"
+do
+  echo $dir
+  pushd $dir
+  git pull
+  popd
+done
