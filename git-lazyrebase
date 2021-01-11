@@ -20,7 +20,7 @@ do
     git pull "${remote}" "${refspec}" && \
     echo -e "\nPushing ${b}" && \
     git signpush || \
-      exit 1
+      ( echo Failed && exit 1 )
     if [ -e "${diff}" ]
     then
       rm -fv "${diff}"

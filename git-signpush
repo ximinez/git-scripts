@@ -16,7 +16,7 @@ git diff --quiet --staged &&
   ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
     ( git push --force-with-lease "${@}" || git push "${@}" ||
       git push --set-upstream origin "${branchname}" ) &&
-    ( [[ -v ci ]] &&
+    ( [[ ! -v ci ]] && exit 0 ||
       git push --force-with-lease ci "${branchname}":"ed-${branchname}" )
 # https://developer.atlassian.com/blog/2015/04/force-with-lease/
 
