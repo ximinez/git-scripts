@@ -3,6 +3,12 @@
 # Searching for .git without checking type handles git worktrees.
 # TODO: Make the ignore list a param, but for now this works.
 
+if [[ $1 == "-v" ]]
+then
+  verbose=1
+  shift
+fi
+
 if [[ $1 == "--remote" ]]
 then
   shift
@@ -40,3 +46,7 @@ find $1 \
   \)
 
 rm -f "${tmp}"
+if [[ -v verbose ]]
+then
+  echo Done
+fi
