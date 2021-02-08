@@ -18,91 +18,96 @@ error()
   echo -e ' *\n  *\n *\n*'
 }
 
-if [[ "${OS}" =~ "Windows" ]]
+# Only do these validations on a branch checkout, which includes `git
+# checkout` with no parameters. https://git-scm.com/docs/githooks
+if [[ $3 -eq 1 ]]
 then
-  compilers=( "msvc" )
-  build_types=( "" )
-else
-  compilers=( "gcc" "clang" )
-  build_types=( "Debug" "Release" )
-fi
+  if [[ "${OS}" =~ "Windows" ]]
+  then
+    compilers=( "msvc" )
+    build_types=( "" )
+  else
+    compilers=( "gcc" "clang" )
+    build_types=( "Debug" "Release" )
+  fi
 
-if [[ -f CMakeLists.txt ]] && \
-  [[ ! ( $(pwd) =~ ".nih_c" || $(pwd) =~ "build/cmake" || \
-  $(pwd) =~ "_deps" ) ]]
-then
-  echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n"
-  for repo in . $( git config --file .gitmodules --get-regexp path | \
-    cut -d\  -f2 )
-  do
-    if [[ ! -d ${repo} || ! -f ${repo}/CMakeLists.txt || \
-      ! -f ${repo}/.gitignore || \
-      $( grep -cw build ${repo}/.gitignore ) == 0 ]]
-    then
-      continue
-    fi
-    pushd ${repo}
-    echo Compilers: ${compilers[@]}
-    echo Build types: ${build_types[@]}
-    for c in "${compilers[@]}"
-      do
-      for debug in "${build_types[@]}"
-      do
-        for unity in ON OFF
+  if [[ -f CMakeLists.txt ]] && \
+    [[ ! ( $(pwd) =~ ".nih_c" || $(pwd) =~ "build/cmake" || \
+    $(pwd) =~ "_deps" ) ]]
+  then
+    echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n"
+    for repo in . $( git config --file .gitmodules --get-regexp path | \
+      cut -d\  -f2 )
+    do
+      if [[ ! -d ${repo} || ! -f ${repo}/CMakeLists.txt || \
+        ! -f ${repo}/.gitignore || \
+        $( grep -cw build ${repo}/.gitignore ) == 0 ]]
+      then
+        continue
+      fi
+      pushd ${repo}
+      echo Compilers: ${compilers[@]}
+      echo Build types: ${build_types[@]}
+      for c in "${compilers[@]}"
         do
-          extra=()
-          cxx=${c/gcc/g++}
-          cxx=${cxx/clang/clang++}
-          if [ -n "$( type -p ccache )" ]
-          then
-            extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
-          fi
-          if [ ${c} == "msvc" ]
-          then
-            extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017 Win64}"
-            extra[${#extra[@]}]="-DCMAKE_GENERATOR_TOOLSET=host=x64"
-            # extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 16 2019}"
-            # extra[${#extra[@]}]="-Ax64"
-          else
-            extra[${#extra[@]}]="-DCMAKE_C_COMPILER=${c}"
-            extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER=${cxx}"
-          fi
-          if [ -z "${debug}"  -o "${debug}" == "unified" ]
-          then
-            target=${c}.${unity}
-          else
-            target=${c}.${debug}.${unity}
-            extra[${#extra[@]}]="-DCMAKE_BUILD_TYPE=${debug}"
-          fi
-          if [ -n "${BOOST_ROOT}" ]
-          then
-            extra[${#extra[@]}]="-DBOOST_ROOT=$BOOST_ROOT"
-          fi
-          mkdir -pv build/cmake/${target}
-          pushd build/cmake/${target}
-          echo -e "\n\n\nTarget: $target"
-          set -x
-          # I like asserts
-          cmake -Dunity=${unity} -Dassert=true -Dwerr=ON "${extra[@]}" ../../..
-          set +x
-          popd
+        for debug in "${build_types[@]}"
+        do
+          for unity in ON OFF
+          do
+            extra=()
+            cxx=${c/gcc/g++}
+            cxx=${cxx/clang/clang++}
+            if [ -n "$( type -p ccache )" ]
+            then
+              extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+            fi
+            if [ ${c} == "msvc" ]
+            then
+              extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017 Win64}"
+              extra[${#extra[@]}]="-DCMAKE_GENERATOR_TOOLSET=host=x64"
+              # extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 16 2019}"
+              # extra[${#extra[@]}]="-Ax64"
+            else
+              extra[${#extra[@]}]="-DCMAKE_C_COMPILER=${c}"
+              extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER=${cxx}"
+            fi
+            if [ -z "${debug}"  -o "${debug}" == "unified" ]
+            then
+              target=${c}.${unity}
+            else
+              target=${c}.${debug}.${unity}
+              extra[${#extra[@]}]="-DCMAKE_BUILD_TYPE=${debug}"
+            fi
+            if [ -n "${BOOST_ROOT}" ]
+            then
+              extra[${#extra[@]}]="-DBOOST_ROOT=$BOOST_ROOT"
+            fi
+            mkdir -pv build/cmake/${target}
+            pushd build/cmake/${target}
+            echo -e "\n\n\nTarget: $target"
+            set -x
+            # I like asserts
+            cmake -Dunity=${unity} -Dassert=true -Dwerr=ON "${extra[@]}" ../../..
+            set +x
+            popd
+          done
         done
       done
+      popd
     done
-    popd
-  done
-  # Update any custom / non-build CMake folders
-  find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
-    -name CMakeCache.txt -print0 | \
-    xargs -r0 -n1 -P4 cmake
-fi
+    # Update any custom / non-build CMake folders
+    find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
+      -name CMakeCache.txt -print0 | \
+      xargs -r0 -n1 -P4 cmake
+  fi
 
-if [ $# -gt 1 ]
-then
-  git verify-commit ${2} || error
-fi
+  if [ $# -gt 1 ]
+  then
+    git verify-commit ${2} || error
+  fi
 
-if git branch -r | grep -q upstream/develop
-then
-	git log --oneline -1 ..upstream/develop
+  if git branch -r | grep -q upstream/develop
+  then
+    git log --oneline -1 ..upstream/develop
+  fi
 fi

@@ -2,7 +2,15 @@
 
 if [ -f .clang-format ]
 then
-  # Format the files changed since the last commit, both staged and unstaged.
+  git_dir=$( git rev-parse --absolute-git-dir )
+  # If we're not in the middle of a merge, check the index only.
+  if [[ ! -f ${git_dir}/MERGE_HEAD ]] && ! git diff --exit-code --quiet
+  then
+    stash=true
+    git stash push --keep-index --quiet
+  fi
+
+  # Format the files
   git-clang-format --extensions c,cpp,h,cxx,ipp
 
   # Only uncomment the following line if you want to aggressively ensure
@@ -10,7 +18,18 @@ then
   # of `clang-format` doesn't have any incompatibilities.
   # find src/ripple src/test -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 | xargs -0 clang-format -i
 
+  # Abort the commit if the format is bad.
+  # Pass `--no-verify` to `git commit` to skip this check.
   # Comment the following line if you want to let the commit complete even if
   # there are formatting problems.
   git diff --exit-code
+  code=$?
+  # If we're not in the middle of a merge, restore any unstaged changes
+  # that were stashed.
+  if [[ ! -f ${git_dir}/MERGE_HEAD && "${stash}" == "true" ]]
+  then
+    git restore --quiet -- .
+    git stash pop --quiet
+  fi
+  exit $code
 fi
