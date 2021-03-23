@@ -5,7 +5,7 @@
 for dir in "${@}"
 do
   echo $dir
-  pushd $dir
+  pushd $dir || continue
   git pull
   popd
 done
