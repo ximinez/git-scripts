@@ -22,6 +22,18 @@ error()
 # checkout` with no parameters. https://git-scm.com/docs/githooks
 if [[ $3 -eq 1 ]]
 then
+  # Put the NIH folder for external projects in a common location
+  if [ -d $HOME/dev ]
+  then
+    export NIH_CACHE_ROOT=$HOME/dev/nih_c
+  elif [ -d /c/dev ]
+  then
+    export NIH_CACHE_ROOT=/c/dev/nih_c
+  else
+    export NIH_CACHE_ROOT=$HOME/nih_c
+  fi
+  echo NIH_CACHE_ROOT: ${NIH_CACHE_ROOT}
+
   if [[ "${OS}" =~ "Windows" ]]
   then
     compilers=( "msvc" )
@@ -32,7 +44,7 @@ then
   fi
 
   if [[ -f CMakeLists.txt ]] && \
-    [[ ! ( $(pwd) =~ ".nih_c" || $(pwd) =~ "build/cmake" || \
+    [[ ! ( $(pwd) =~ "nih_c" || $(pwd) =~ "build/cmake" || \
     $(pwd) =~ "_deps" ) ]]
   then
     echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n"
