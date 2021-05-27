@@ -75,10 +75,14 @@ then
             fi
             if [ ${c} == "msvc" ]
             then
-              extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017 Win64}"
-              extra[${#extra[@]}]="-DCMAKE_GENERATOR_TOOLSET=host=x64"
+              # extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017 Win64}"
               # extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 16 2019}"
               # extra[${#extra[@]}]="-Ax64"
+
+              extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017}"
+              extra[${#extra[@]}]="-Ax64"
+
+              extra[${#extra[@]}]="-DCMAKE_GENERATOR_TOOLSET=host=x64"
             else
               extra[${#extra[@]}]="-DCMAKE_C_COMPILER=${c}"
               extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER=${cxx}"
