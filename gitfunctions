@@ -8,6 +8,9 @@
 _git_lazyrebase() {
 _git_checkout;
 };
+_git_logdiff() {
+_git_log;
+};
 _git_review() {
 _git_checkout;
 };

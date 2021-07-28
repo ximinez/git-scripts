@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [[ $# -lt 1 ]]
+then
+  echo Usage: $( basename $0 ) branch...
+  echo
+  echo If more than one branch is provided, show history for each branch
+  echo from the common ancestor of all of them. If only one branch is
+  echo provided, show history for each branch from the common ancestor
+  echo of it and the current branch.
+  exit 1
+elif [[ $# -eq 1 ]]
+then
+  branches=( "${@}" HEAD )
+else
+  branches=( "${@}" )
+fi
+base=$( git merge-base --octopus "${branches[@]}" )
+echo Common ancestor
+git log --oneline -1 "${base}"
+for branch in "${branches[@]}"
+do
+  echo ${branch}
+  git log --oneline "${base}..${branch}"
+done
