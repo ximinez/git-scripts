@@ -11,6 +11,14 @@
 #
 # mkdir -p ~/.git/hooks/ && ln -vsf $( pwd )/githooks-post-checkout ~/.git/hooks/post-checkout && git config --global core.hooksPath ~/.git/hooks/
 
+
+# The hook is given three parameters: the ref of the previous HEAD, the
+# ref of the new HEAD (which may or may not have changed), and a flag
+# indicating whether the checkout was a branch checkout (changing
+# branches, flag=1) or a file checkout (retrieving a file from the
+# index, flag=0).
+
+
 error()
 {
   echo -e '*\n *\n  *\n *'
@@ -128,5 +136,27 @@ then
   if git branch -r | grep -q upstream/develop
   then
     git log --oneline -1 ..upstream/develop
+  fi
+
+  # Reformat on checkout, if the current branch has instructions
+  if [[ -f .clang-format ]]
+  then
+    echo "$@"
+    compare=$( [ "$1" = "$2" ] && echo "upstream/develop" || echo "$1" )
+    echo -e "\nFormatting files changed since $compare"
+    # In Windows confirm the correct path to your LLVM install. But note
+    # that there are incompatibilities with the Windows version so you
+    # may not want to use this hook in Windows.
+    llvmpath="/c/Program Files/LLVM/bin/"
+    if [ -d "${llvmpath}" ]
+    then
+      PATH="${llvmpath}:${PATH}"
+    fi
+    # find src/ripple src/test -type f \! -name 'AccountTxPaging.cpp' \( \
+    #   -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 \
+    #   | xargs -0 clang-format -i
+    git-clang-format --extensions c,cpp,h,cxx,ipp $compare
+  else
+    echo -e "\nNot formatting code on older branch"
   fi
 fi
