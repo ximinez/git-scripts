@@ -150,7 +150,9 @@ then
             echo -e "\n\n\nTarget: $target"
             set -x
             # I like asserts
-            cmake -Dunity=${unity} -Dassert=true -Dwerr=ON "${extra[@]}" ../../..
+            cmake -Dunity=${unity} -Dassert=true -Dwerr=ON "${extra[@]}" \
+              ../../.. |& awk '{printf "."}'
+            echo
             set +x
             popd
           done
@@ -161,7 +163,7 @@ then
     # Update any custom / non-build CMake folders
     find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
       -name CMakeCache.txt -print0 | \
-      xargs -r0 -n1 -P4 cmake
+      xargs -r0 -n1 -P4 cmake |& awk '{printf "."}' && echo
 
     # Reformat on checkout, if the current branch has instructions
     if [[ -f .clang-format ]]
@@ -199,5 +201,12 @@ then
   if git branch -r | grep -q upstream/develop
   then
     git log --oneline -1 ..upstream/develop
+  fi
+
+  b="$(git symbolic-ref HEAD 2>/dev/null)"
+  b=${b##refs/heads/};
+  if [[ "$b" != "" ]]
+  then
+    echo -e "\nGit branch ready: $b\n"
   fi
 fi
