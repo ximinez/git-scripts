@@ -50,24 +50,29 @@ then
     compilers=( "msvc" )
     build_types=( "" )
 
-    pg='/C/Program Files/PostgreSQL'
-    if [[ -d "${pg}" ]]
+    if false
     then
-      # Initialize the entry with the top dir, then look for
-      # numbered children. Use the first one found.
-      # (Don't mix versions.)
-      postgres="-DPostgreSQL_ROOT=${pg}"
-      for sub in "${pg}"/[0-9]*
-      do
-        if [[ -d "${sub}" ]]
-        then
-          echo "Found PostgreSQL at ${sub}"
-          postgres="-DPostgreSQL_ROOT=${sub}"
-          break
-        fi
-      done
+      pg='/C/Program Files/PostgreSQL'
+      if [[ -d "${pg}" ]]
+      then
+        # Initialize the entry with the top dir, then look for
+        # numbered children. Use the first one found.
+        # (Don't mix versions.)
+        postgres="-DPostgreSQL_ROOT=${pg}"
+        for sub in "${pg}"/[0-9]*
+        do
+          if [[ -d "${sub}" ]]
+          then
+            echo "Found PostgreSQL at ${sub}"
+            postgres="-DPostgreSQL_ROOT=${sub}"
+            break
+          fi
+        done
+      fi
+      unset pg
+    else
+      postgres="-Dnopostgres=TRUE"
     fi
-    unset pg
 
     for cas in '/C/Dev/cassandra'*
     do
