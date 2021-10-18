@@ -91,29 +91,32 @@ then
     build_types=( "Debug" "Release" )
   fi
 
+  logfile="$(pwd)/build/checkout.log"
   if [[ -f CMakeLists.txt ]] && \
     [[ ! ( $(pwd) =~ "nih_c" || $(pwd) =~ "build/cmake" || \
     $(pwd) =~ "_deps" ) ]]
   then
-    echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n"
+    mkdir -pv build
+    echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n" | tee $logfile
     for repo in . $( git config --file .gitmodules --get-regexp path | \
       cut -d\  -f2 )
     do
       if [[ ! -d ${repo} || ! -f ${repo}/CMakeLists.txt || \
         ( -e ${repo}/build && ! -d ${repo}/build ) ]]
       then
-        echo "Not running cmake in ${repo}" >&2
+        echo "Not running cmake in ${repo}" | tee -a $logfile >&2
         continue
       fi
       pushd ${repo}
-      echo Compilers: ${compilers[@]}
-      echo Build types: ${build_types[@]}
+      echo Compilers: ${compilers[@]} | tee -a $logfile
+      echo Build types: ${build_types[@]} | tee -a $logfile
       for c in "${compilers[@]}"
         do
         for debug in "${build_types[@]}"
         do
           for unity in ON OFF
           do
+            # echo "c: $c, debug: $debug, unity: $unity" | tee -a $logfile
             extra=()
             cxx=${c/gcc/g++}
             cxx=${cxx/clang/clang++}
@@ -150,14 +153,15 @@ then
             then
               extra[${#extra[@]}]="-DBOOST_ROOT=$BOOST_ROOT"
             fi
-            mkdir -pv build/cmake/${target}
+            mkdir -pv build/cmake/${target} | tee -a $logfile
             pushd build/cmake/${target}
-            echo -e "\n\n\nTarget: $target"
+            echo -e "\n\n\nTarget: $target" | tee -a $logfile
             set -x
             # I like asserts
+            pwd | tee -a $logfile
             cmake -Dunity=${unity} -Dassert=true -Dwerr=ON "${extra[@]}" \
-              ../../.. |& awk '{printf "."}'
-            echo
+              ../../.. |& tee -a $logfile |& awk '{printf "."}'
+            echo | tee -a $logfile
             set +x
             popd
           done
@@ -168,7 +172,7 @@ then
     # Update any custom / non-build CMake folders
     find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
       -name CMakeCache.txt -print0 | \
-      xargs -r0 -n1 -P4 cmake |& awk '{printf "."}' && echo
+      xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
 
     # Reformat on checkout, if the current branch has instructions
     if [[ -f .clang-format ]]
