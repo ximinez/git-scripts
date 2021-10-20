@@ -107,7 +107,7 @@ then
         echo "Not running cmake in ${repo}" | tee -a $logfile >&2
         continue
       fi
-      pushd ${repo}
+      pushd ${repo} > >( tee -a $logfile )
       echo Compilers: ${compilers[@]} | tee -a $logfile
       echo Build types: ${build_types[@]} | tee -a $logfile
       for c in "${compilers[@]}"
@@ -154,7 +154,7 @@ then
               extra[${#extra[@]}]="-DBOOST_ROOT=$BOOST_ROOT"
             fi
             mkdir -pv build/cmake/${target} | tee -a $logfile
-            pushd build/cmake/${target}
+            pushd build/cmake/${target} > >( tee -a $logfile )
             echo -e "\n\n\nTarget: $target" | tee -a $logfile
             set -x
             # I like asserts
@@ -163,15 +163,16 @@ then
               ../../.. |& tee -a $logfile |& awk '{printf "."}'
             echo | tee -a $logfile
             set +x
-            popd
+            popd > >( tee -a $logfile )
           done
         done
       done
-      popd
+      popd > >( tee -a $logfile )
     done
     # Update any custom / non-build CMake folders
     find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
-      -name CMakeCache.txt -print0 | \
+      -name CMakeCache.txt -fprintf /dev/stderr "Building cmake in %p\n" \
+      -print0 2> >( tee -a ${logfile} 1>&2 ) | \
       xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
 
     # Reformat on checkout, if the current branch has instructions
