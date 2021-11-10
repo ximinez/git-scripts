@@ -159,8 +159,10 @@ then
             set -x
             # I like asserts
             pwd | tee -a $logfile
-            cmake -Dunity=${unity} -Dassert=true -Dwerr=ON "${extra[@]}" \
-              ../../.. |& tee -a $logfile |& awk '{printf "."}'
+            command=$( echo cmake -Dunity=${unity} -Dassert=true \
+              -Dwerr=ON "${extra[@]}" ../../.. )
+            echo "\$ ${command}" |& tee -a $logfile
+            ${command} |& tee -a $logfile |& awk '{printf "."}'
             echo | tee -a $logfile
             set +x
             popd > >( tee -a $logfile )
