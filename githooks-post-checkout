@@ -122,36 +122,36 @@ then
             cxx=${cxx/clang/clang++}
             if [ -n "$( type -p ccache )" ]
             then
-              extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+              extra+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache" )
             fi
             if [ ${c} == "msvc" ]
             then
-              extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017 Win64}"
-              # extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 16 2019}"
-              # extra[${#extra[@]}]="-Ax64"
+              extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017 Win64}" )
+              # extra+=( "-G${cmake_win_gen:=Visual Studio 16 2019}" )
+              # extra+=( "-Ax64" )
 
-              # extra[${#extra[@]}]="-G${cmake_win_gen:=Visual Studio 15 2017}"
-              # extra[${#extra[@]}]="-Ax64"
+              # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017}" )
+              # extra+=( "-Ax64" )
 
-              extra[${#extra[@]}]="-DCMAKE_GENERATOR_TOOLSET=host=x64"
+              extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
               [[ ! -v postgres ]] || \
-                extra[${#extra[@]}]="${postgres}"
+                extra+=( "${postgres}" )
               [[ ! -v cmake_prefix_path ]] || \
-                extra[${#extra[@]}]="${cmake_prefix_path}"
+                extra+=( "${cmake_prefix_path}" )
             else
-              extra[${#extra[@]}]="-DCMAKE_C_COMPILER=${c}"
-              extra[${#extra[@]}]="-DCMAKE_CXX_COMPILER=${cxx}"
+              extra+=( "-DCMAKE_C_COMPILER=${c}" )
+              extra+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
             fi
             if [ -z "${debug}"  -o "${debug}" == "unified" ]
             then
               target=${c}.${unity}
             else
               target=${c}.${debug}.${unity}
-              extra[${#extra[@]}]="-DCMAKE_BUILD_TYPE=${debug}"
+              extra+=( "-DCMAKE_BUILD_TYPE=${debug}" )
             fi
             if [ -n "${BOOST_ROOT}" ]
             then
-              extra[${#extra[@]}]="-DBOOST_ROOT=$BOOST_ROOT"
+              extra+=( "-DBOOST_ROOT=$BOOST_ROOT" )
             fi
             mkdir -pv build/cmake/${target} | tee -a $logfile
             pushd build/cmake/${target} > >( tee -a $logfile )
@@ -159,10 +159,10 @@ then
             set -x
             # I like asserts
             pwd | tee -a $logfile
-            extra[${#extra[@]}]="-Dunity=${unity}"
-            extra[${#extra[@]}]="-Dassert=true"
-            extra[${#extra[@]}]="-Dwerr=ON"
-            extra[${#extra[@]}]="../../.."
+            extra+=( "-Dunity=${unity}" )
+            extra+=( "-Dassert=true" )
+            extra+=( "-Dwerr=ON" )
+            extra+=( "../../.." )
             echo "\$ cmake ${extra[@]}" |& tee -a $logfile
             cmake "${extra[@]}" |& tee -a $logfile |& awk '{printf "."}'
             echo | tee -a $logfile
