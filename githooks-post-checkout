@@ -96,6 +96,11 @@ then
     [[ ! ( $(pwd) =~ "nih_c" || $(pwd) =~ "build/cmake" || \
     $(pwd) =~ "_deps" ) ]]
   then
+    if [[ -e conanfile.py ]]
+    then
+      conan export external/rocksdb |& tee -a $logfile
+      conan=1
+    fi
     mkdir -pv build
     echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n" | tee $logfile
     for repo in . $( git config --file .gitmodules --get-regexp path | \
@@ -124,24 +129,10 @@ then
             then
               extra+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache" )
             fi
-            if [ ${c} == "msvc" ]
-            then
-              extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017 Win64}" )
-              # extra+=( "-G${cmake_win_gen:=Visual Studio 16 2019}" )
-              # extra+=( "-Ax64" )
-
-              # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017}" )
-              # extra+=( "-Ax64" )
-
-              extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
-              [[ ! -v postgres ]] || \
-                extra+=( "${postgres}" )
-              [[ ! -v cmake_prefix_path ]] || \
-                extra+=( "${cmake_prefix_path}" )
-            else
-              extra+=( "-DCMAKE_C_COMPILER=${c}" )
-              extra+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
-            fi
+            [[ ! -v postgres ]] || \
+              extra+=( "${postgres}" )
+            [[ ! -v cmake_prefix_path ]] || \
+              extra+=( "${cmake_prefix_path}" )
             if [ -z "${debug}"  -o "${debug}" == "unified" ]
             then
               target=${c}.${unity}
@@ -157,9 +148,43 @@ then
             pushd build/cmake/${target} > >( tee -a $logfile )
             echo -e "\n\n\nTarget: $target" | tee -a $logfile
             set -x
-            # I like asserts
             pwd | tee -a $logfile
+            if [[ -v conan ]]
+            then
+              if [ -z "${debug}"  -o "${debug}" == "unified" ]
+              then
+                for conandebug in Release Debug
+                do
+                  conan install ../../.. --build missing \
+                    -s build_type=${conandebug} |& tee -a $logfile |& \
+                      awk '{printf "."}'
+                  echo | tee -a $logfile
+                done
+              else
+                conan install ../../.. --build missing \
+                  -s build_type=${debug} |& tee -a $logfile |& \
+                    awk '{printf "."}'
+                echo | tee -a $logfile
+              fi
+              extra+=( "-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake" )
+            else
+              if [ ${c} == "msvc" ]
+              then
+                extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017 Win64}" )
+                # extra+=( "-G${cmake_win_gen:=Visual Studio 16 2019}" )
+                # extra+=( "-Ax64" )
+
+                # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017}" )
+                # extra+=( "-Ax64" )
+
+                extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
+              else
+                extra+=( "-DCMAKE_C_COMPILER=${c}" )
+                extra+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
+              fi
+            fi
             extra+=( "-Dunity=${unity}" )
+            # I like asserts
             extra+=( "-Dassert=true" )
             extra+=( "-Dwerr=ON" )
             extra+=( "../../.." )
