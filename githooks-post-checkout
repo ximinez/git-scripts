@@ -170,14 +170,16 @@ then
             else
               if [ ${c} == "msvc" ]
               then
-                extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017 Win64}" )
-                # extra+=( "-G${cmake_win_gen:=Visual Studio 16 2019}" )
-                # extra+=( "-Ax64" )
+                # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017 Win64}" )
+                extra+=( "-G${cmake_win_gen:=Visual Studio 16 2019}" )
+                extra+=( "-Ax64" )
 
                 # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017}" )
                 # extra+=( "-Ax64" )
 
-                extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
+                # extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
+                # Use the VS 2017 compiler
+                extra+=( "-DCMAKE_GENERATOR_TOOLSET=v141,host=x64" )
               else
                 extra+=( "-DCMAKE_C_COMPILER=${c}" )
                 extra+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
