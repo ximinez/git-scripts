@@ -47,7 +47,16 @@ then
 
   if [[ "${OS}" =~ "Windows" ]]
   then
-    compilers=( "msvc" )
+    vsgen="Visual Studio 16 2019"
+    compilers=( "msvc2019" )
+    VS2022="/c/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin"
+    if [[ -e "${VS2022}/cmake.exe" ]]
+    then
+      export PATH="${VS2022}:${PATH}"
+      vsgen="Visual Studio 17 2022"
+      compilers=( "msvc2022" )
+    fi
+    # compilers=( "msvc2017" "msvc2019" "msvc2022" )
     build_types=( "" )
 
     if false
@@ -168,18 +177,30 @@ then
               fi
               extra+=( "-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake" )
             else
-              if [ ${c} == "msvc" ]
+              if [ ${c} == "msvc2022" ]
               then
-                # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017 Win64}" )
-                extra+=( "-G${cmake_win_gen:=Visual Studio 16 2019}" )
+                extra+=( "-G${cmake_win_gen:=Visual Studio 17 2022}" )
                 extra+=( "-Ax64" )
 
-                # extra+=( "-G${cmake_win_gen:=Visual Studio 15 2017}" )
-                # extra+=( "-Ax64" )
+                extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
+              elif [ ${c} == "msvc2019" ]
+              then
+                extra+=( "-G${cmake_win_gen:=${vsgen}}" )
+                extra+=( "-Ax64" )
 
-                # extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
-                # Use the VS 2017 compiler
+                extra+=( "-DCMAKE_GENERATOR_TOOLSET=v142,host=x64" )
+              elif [ ${c} == "msvc2017" ]
+              then
+                extra+=( "-G${cmake_win_gen:=${vsgen}}" )
+                extra+=( "-Ax64" )
+
                 extra+=( "-DCMAKE_GENERATOR_TOOLSET=v141,host=x64" )
+              elif [ ${c} == "msvc" ]
+              then
+                extra+=( "-G${cmake_win_gen:=${vsgen}}" )
+                extra+=( "-Ax64" )
+
+                extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
               else
                 extra+=( "-DCMAKE_C_COMPILER=${c}" )
                 extra+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
