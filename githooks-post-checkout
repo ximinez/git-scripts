@@ -48,15 +48,15 @@ then
   if [[ "${OS}" =~ "Windows" ]]
   then
     vsgen="Visual Studio 16 2019"
-    compilers=( "msvc2019" )
+    compilers=( "msvc19" )
     VS2022="/c/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin"
-    if [[ -e "${VS2022}/cmake.exe" ]]
+    if false && [[ -e "${VS2022}/cmake.exe" ]]
     then
       export PATH="${VS2022}:${PATH}"
       vsgen="Visual Studio 17 2022"
-      compilers=( "msvc2022" )
+      # compilers=( "msvc22" )
     fi
-    # compilers=( "msvc2017" "msvc2019" "msvc2022" )
+    # compilers=( "msvc17" "msvc19" "msvc22" )
     build_types=( "" )
 
     if false
@@ -177,19 +177,24 @@ then
               fi
               extra+=( "-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake" )
             else
-              if [ ${c} == "msvc2022" ]
+              if [ ${c} == "msvc22" ]
               then
                 extra+=( "-G${cmake_win_gen:=Visual Studio 17 2022}" )
                 extra+=( "-Ax64" )
 
                 extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
-              elif [ ${c} == "msvc2019" ]
+              elif [ ${c} == "msvc19" ]
               then
                 extra+=( "-G${cmake_win_gen:=${vsgen}}" )
                 extra+=( "-Ax64" )
 
-                extra+=( "-DCMAKE_GENERATOR_TOOLSET=v142,host=x64" )
-              elif [ ${c} == "msvc2017" ]
+                if [[ "${vsgen}" == "Visual Studio 17 2022" ]]
+                then
+                  extra+=( "-DCMAKE_GENERATOR_TOOLSET=v142,host=x64" )
+                else
+                  extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
+                fi
+              elif [ ${c} == "msvc17" ]
               then
                 extra+=( "-G${cmake_win_gen:=${vsgen}}" )
                 extra+=( "-Ax64" )
