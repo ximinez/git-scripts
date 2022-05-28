@@ -153,6 +153,10 @@ then
             then
               extra+=( "-DBOOST_ROOT=$BOOST_ROOT" )
             fi
+            if [ -n "${OPENSSL_ROOT}" ]
+            then
+              extra+=( "-DOPENSSL_ROOT=$OPENSSL_ROOT" )
+            fi
             mkdir -pv build/cmake/${target} | tee -a $logfile
             pushd build/cmake/${target} > >( tee -a $logfile )
             echo -e "\n\n\nTarget: $target" | tee -a $logfile
