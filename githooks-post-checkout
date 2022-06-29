@@ -47,15 +47,10 @@ then
 
   if [[ "${OS}" =~ "Windows" ]]
   then
-    vsgen="Visual Studio 16 2019"
-    compilers=( "msvc19" )
-    VS2022="/c/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin"
-    if false && [[ -e "${VS2022}/cmake.exe" ]]
-    then
-      export PATH="${VS2022}:${PATH}"
-      vsgen="Visual Studio 17 2022"
-      # compilers=( "msvc22" )
-    fi
+    # vsgen="Visual Studio 16 2019"
+    # compilers=( "msvc19" )
+    vsgen="Visual Studio 17 2022"
+    compilers=( "msvc22" "msvc19" )
     # compilers=( "msvc17" "msvc19" "msvc22" )
     build_types=( "" )
 
@@ -107,6 +102,7 @@ then
   then
     if [[ -e conanfile.py ]]
     then
+      echo conan export external/rocksdb |& tee -a $logfile
       conan export external/rocksdb |& tee -a $logfile
       conan=1
     fi
@@ -168,12 +164,16 @@ then
               then
                 for conandebug in Release Debug
                 do
+                  echo conan install ../../.. --build missing \
+                    -s build_type=${conandebug} |& tee -a $logfile
                   conan install ../../.. --build missing \
                     -s build_type=${conandebug} |& tee -a $logfile |& \
                       awk '{printf "."}'
                   echo | tee -a $logfile
                 done
               else
+                echo conan install ../../.. --build missing \
+                  -s build_type=${debug} |& tee -a $logfile
                 conan install ../../.. --build missing \
                   -s build_type=${debug} |& tee -a $logfile |& \
                     awk '{printf "."}'
@@ -183,7 +183,7 @@ then
             else
               if [ ${c} == "msvc22" ]
               then
-                extra+=( "-G${cmake_win_gen:=Visual Studio 17 2022}" )
+                extra+=( "-G${cmake_win_gen:=${vsgen}}" )
                 extra+=( "-Ax64" )
 
                 extra+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
@@ -231,6 +231,9 @@ then
       popd > >( tee -a $logfile )
     done
     # Update any custom / non-build CMake folders
+    echo find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune \
+      -false -o -name CMakeCache.txt -fprintf /dev/stderr \
+      "Building cmake in %p\n" -print0 | tee -a ${logfile}
     find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune -false -o \
       -name CMakeCache.txt -fprintf /dev/stderr "Building cmake in %p\n" \
       -print0 2> >( tee -a ${logfile} 1>&2 ) | \
