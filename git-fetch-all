@@ -1,6 +1,12 @@
 #!/bin/bash
 
-for dir in ~/dev*/* /C/Dev*/*
+search=( ~/dev*/* /C/Dev*/* )
+if [[ $# -gt 0 ]]
+then
+  search=( "${@}" )
+fi
+
+for dir in "${search[@]}"
 do
 	if [ -d ${dir}/.git ] 
 	then
