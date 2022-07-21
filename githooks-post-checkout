@@ -97,9 +97,10 @@ then
   logfile="$(pwd)/build/checkout.log"
   if [[ -f CMakeLists.txt ]] && \
     [[ ! ( $(pwd) =~ "nih_c" || $(pwd) =~ "build/cmake" || \
-    $(pwd) =~ "_deps" ) ]]
+    $(pwd) =~ "_deps" || $(pwd) =~ ".conan" ) ]]
   then
-    echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n" | tee $logfile
+    mkdir -pv build | tee $logfile
+    echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n" | tee -a $logfile
     unset conan
     if [[ -e conanfile.py ]]
     then
@@ -108,7 +109,6 @@ then
       "${cmd[@]}" |& tee -a $logfile
       conan=1
     fi
-    mkdir -pv build | tee -a $logfile
     for repo in . $( git config --file .gitmodules --get-regexp path | \
       cut -d\  -f2 )
     do
