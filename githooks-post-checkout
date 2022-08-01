@@ -51,7 +51,7 @@ then
     # compilers=( "msvc17" "msvc19" "msvc22" )
     # vsgen="Visual Studio 17 2022"
     compilers=( "msvc19" )
-    build_types=( "Release" "Debug" )
+    build_types=( "" )
 
     if false
     then
@@ -134,30 +134,42 @@ then
           if [[ -v conan ]]
           then
             tooldir="conan.${c}"
-            profile=()
-            if [[ -n "${debug}" ]] && conan profile list | \
-              grep -qw "${c}${debug}"
+            if conan profile list | grep -qw "${c}${debug}"
             then
-              profile+=( -pr "${c}${debug}" )
               tooldir+="${debug}"
             elif conan profile list | grep -qw "${c}Release"
             then
-              profile+=( -pr "${c}Release" )
               tooldir+="Release"
-            elif conan profile list | grep -qw "${c}"
-            then
-              profile+=( -pr "${c}" )
             fi
-            conanbuild=${debug:-Release}
-            cmd=( conan install .
-              --output-folder "build/${tooldir}"
-              --build missing
-              -s build_type="${conanbuild}"
-              "${profile[@]}" )
-            echo "Run: ${cmd[@]}" |& tee -a $logfile
-            "${cmd[@]}" |& tee -a $logfile |& \
-                awk '{printf "."}'
-            echo | tee -a $logfile
+            if [[ -z "${debug}" ]]
+            then
+              conan_types=( Release Debug )
+            else
+              conan_types=( ${debug:-Release} )
+            fi
+            for conanbuild in "${conan_types[@]}"
+            do
+              profile=()
+              if conan profile list | grep -qw "${c}${conanbuild}"
+              then
+                profile+=( -pr "${c}${conanbuild}" )
+              elif conan profile list | grep -qw "${c}Release"
+              then
+                profile+=( -pr "${c}Release" )
+              elif conan profile list | grep -qw "${c}"
+              then
+                profile+=( -pr "${c}" )
+              fi
+              cmd=( conan install .
+                --output-folder "build/${tooldir}"
+                --build missing
+                -s build_type="${conanbuild}"
+                "${profile[@]}" )
+              echo "Run: ${cmd[@]}" |& tee -a $logfile
+              "${cmd[@]}" |& tee -a $logfile |& \
+                  awk '{printf "."}'
+              echo | tee -a $logfile
+            done
             buildparam+=(
             "-DCMAKE_TOOLCHAIN_FILE=../../${tooldir}/build/generators/conan_toolchain.cmake" )
           fi
