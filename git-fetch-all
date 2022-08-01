@@ -1,6 +1,6 @@
 #!/bin/bash
 
-search=( ~/dev*/* /C/Dev*/* )
+search=( ~/dev*/* /C/Dev*/* /c/dev*/* )
 if [[ $# -gt 0 ]]
 then
   search=( "${@}" )
