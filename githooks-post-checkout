@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 # To install
 # for dir in ../*/.git ; do echo $dir ; ln -vsf $( pwd )/githooks-post-checkout $dir/hooks/post-checkout ; done
@@ -47,11 +47,11 @@ then
 
   if [[ "${OS}" =~ "Windows" ]]
   then
-    # vsgen="Visual Studio 16 2019"
+    vsgen="Visual Studio 16 2019"
     # compilers=( "msvc17" "msvc19" "msvc22" )
-    vsgen="Visual Studio 17 2022"
-    compilers=( "msvc19" "msvc22" )
-    build_types=( "" )
+    # vsgen="Visual Studio 17 2022"
+    compilers=( "msvc19" )
+    build_types=( "Release" "Debug" )
 
     if false
     then
@@ -123,6 +123,11 @@ then
       echo Build types: ${build_types[@]} | tee -a $logfile
       for c in "${compilers[@]}"
       do
+        # conan_types=( "${build_types[@]}" )
+        # if [[ "${#conan_types[@]}" -le 1 && -z "${conan_types[0]}" ]]
+        # then
+          # conan_types=( "Debug" "Release" )
+        # fi
         for debug in "${build_types[@]}"
         do
           buildparam=()
@@ -130,7 +135,8 @@ then
           then
             tooldir="conan.${c}"
             profile=()
-            if [[ -n "${debug}" ]] && conan profile list | grep -qw "${c}${debug}"
+            if [[ -n "${debug}" ]] && conan profile list | \
+              grep -qw "${c}${debug}"
             then
               profile+=( -pr "${c}${debug}" )
               tooldir+="${debug}"
