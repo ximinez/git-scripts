@@ -104,10 +104,16 @@ then
     unset conan
     if [[ -e conanfile.py ]]
     then
-      cmd=( conan export external/rocksdb )
-      echo "Run: ${cmd[@]}" |& tee -a $logfile
-      "${cmd[@]}" |& tee -a $logfile
       conan=1
+      for exp in "external/rocksdb"
+      do
+        if [[ -e "${exp}" ]]
+        then
+          cmd=( conan export "${exp}" )
+          echo "Run: ${cmd[@]}" |& tee -a $logfile
+          "${cmd[@]}" |& tee -a $logfile
+        fi
+      done
     fi
     for repo in . $( git config --file .gitmodules --get-regexp path | \
       cut -d\  -f2 )
@@ -133,14 +139,15 @@ then
           buildparam=()
           if [[ -v conan ]]
           then
-            tooldir="conan.${c}"
-            if conan profile list | grep -qw "${c}${debug}"
-            then
-              tooldir+="${debug}"
-            elif conan profile list | grep -qw "${c}Release"
-            then
-              tooldir+="Release"
-            fi
+            tooldir="conan"
+            for search in "${c}${debug}" "${c}Release" "${c}"
+            do
+              if conan profile list | grep -qw "${search}"
+              then
+                tooldir+=".${search}"
+                break
+              fi
+            done
             if [[ -z "${debug}" ]]
             then
               conan_types=( Release Debug )
@@ -150,16 +157,14 @@ then
             for conanbuild in "${conan_types[@]}"
             do
               profile=()
-              if conan profile list | grep -qw "${c}${conanbuild}"
-              then
-                profile+=( -pr "${c}${conanbuild}" )
-              elif conan profile list | grep -qw "${c}Release"
-              then
-                profile+=( -pr "${c}Release" )
-              elif conan profile list | grep -qw "${c}"
-              then
-                profile+=( -pr "${c}" )
-              fi
+              for search in "${c}${conanbuild}" "${c}Release" "${c}" "default"
+              do
+                if conan profile list | grep -qw "${search}"
+                then
+                  profile+=( -pr "${search}" )
+                  break
+                fi
+              done
               cmd=( conan install .
                 --output-folder "build/${tooldir}"
                 --build missing
