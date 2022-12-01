@@ -1,8 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 # upstream=${2:-upstream/develop}
 set -e
 git diff --exit-code || ( echo "Can't rebase with differences" && exit 1 )
+files=()
+while [ -f "$1" ]
+do
+  files+=( "$1" )
+  shift
+done
 remote=${1:-upstream}
 refspec=${2:-develop}
 shift 2
@@ -20,6 +26,10 @@ do
     git pull "${remote}" "${refspec}" && \
     echo -e "\nPushing ${b}" && \
     git signpush || \
+      ( [ "${#files[@]}" -gt 0 ] && \
+        git rollback "${files[@]}" && \
+        git diff --exit-code && \
+        git signpush --no-verify ) || \
       ( echo Failed && exit 1 )
     if [ -e "${diff}" ]
     then
