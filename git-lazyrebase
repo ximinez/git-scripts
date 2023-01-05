@@ -23,7 +23,7 @@ do
     git reset --hard && \
     git pull && \
     # git rebase "${upstream}"
-    git pull "${remote}" "${refspec}" && \
+    git rebase "${remote}/${refspec}" && \
     echo -e "\nPushing ${b}" && \
     git signpush || \
       ( [ "${#files[@]}" -gt 0 ] && \
