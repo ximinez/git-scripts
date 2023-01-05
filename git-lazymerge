@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# upstream=${2:-upstream/develop}
+set -e
+git diff --exit-code || ( echo "Can't rebase with differences" && exit 1 )
+files=()
+while [ -f "$1" ]
+do
+  files+=( "$1" )
+  shift
+done
+remote=${1:-upstream}
+refspec=${2:-develop}
+shift 2
+for b in "${@}"
+do
+  diff="diff.${b}"
+  echo -e "\n\n${b}\n\n"
+  ( [ "$(git rev-parse --abbrev-ref HEAD)" = "${b}" ] || \
+      git checkout "${b}" ) && \
+    git diff | tee "${diff}" && \
+    # Undo any changes that may have been done by the checkout
+    git reset --hard && \
+    git pull && \
+    # git rebase "${upstream}"
+    # git pull "${remote}" "${refspec}" && \
+    git merge --no-edit --log --verbose "${remote}/${refspec}" && \
+    echo -e "\nPushing ${b}" && \
+    git signpush || \
+      ( [ "${#files[@]}" -gt 0 ] && \
+        git rollback "${files[@]}" && \
+        git diff --exit-code && \
+        git signpush --no-verify ) || \
+      ( echo Failed && exit 1 )
+    if [ -e "${diff}" ]
+    then
+      rm -fv "${diff}"
+    fi
+done
