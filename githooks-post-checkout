@@ -26,6 +26,14 @@ error()
   echo -e ' *\n  *\n *\n*'
 }
 
+_run()
+{
+  # Usage: _run: command
+  echo -en "\nRun: ${@} " |& tee -a "${logfile}"
+  date |& tee -a "${logfile}"
+  ( time ${@} ) |& tee -a "${logfile}"
+}
+
 # Only do these validations on a branch checkout, which includes `git
 # checkout` with no parameters. https://git-scm.com/docs/githooks
 if [[ $3 -eq 1 ]]
@@ -165,6 +173,7 @@ then
                   break
                 fi
               done
+              _run mkdir "build/${tooldir}"
               cmd=( conan install .
                 --output-folder "build/${tooldir}"
                 --build missing
