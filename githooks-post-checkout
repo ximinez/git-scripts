@@ -173,7 +173,7 @@ then
                   break
                 fi
               done
-              _run mkdir "build/${tooldir}"
+              _run mkdir -pv "build/${tooldir}"
               cmd=( conan install .
                 --output-folder "build/${tooldir}"
                 --build missing
