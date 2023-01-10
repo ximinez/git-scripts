@@ -269,8 +269,18 @@ then
           done
         done
       done
+
+      preset="${repo}/CMakeUserPresets.json"
+      if [[ -v conan && -f "${preset}" ]] &&
+        grep -q "${tooldir}..build/generators..CMakePresets.json" "${preset}" &&
+        [[ $( wc -l "${preset}" | cut -d\  -f1 ) -eq 8 ]]
+      then
+        _run mv -vf "${preset}" "${preset}.bad"
+      fi
+
       popd > >( tee -a $logfile )
     done
+
     # Update any custom / non-build CMake folders
     cmd=( find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune
       -false -o -name CMakeCache.txt -fprintf /dev/stderr
