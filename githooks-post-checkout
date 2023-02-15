@@ -290,7 +290,8 @@ then
       xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
 
     # Reformat on checkout, if the current branch has instructions
-    if [[ -f .clang-format ]]
+    if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
+      && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]]
     then
       echo "$@"
       if git branch -r | grep -q upstream/develop
@@ -313,7 +314,7 @@ then
       #   | xargs -0 clang-format -i
       git-clang-format --extensions c,cpp,h,cxx,ipp $compare
     else
-      echo -e "\nNot formatting code on older branch"
+      echo -e "\nNot formatting code"
     fi
   fi
 

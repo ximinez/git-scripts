@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Format all files that are different from the remote, committed or not
-if [ -f .clang-format ]
+if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
+  && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]]
 then
   z40=0000000000000000000000000000000000000000
   while read local_ref local_sha remote_ref remote_sha

@@ -15,7 +15,7 @@ shift 2
 for b in "${@}"
 do
   diff="diff.${b}"
-  echo -e "\n\n${b}\n\n"
+  echo -e "\n\nBegin merge: ${b}\n\n"
   ( [ "$(git rev-parse --abbrev-ref HEAD)" = "${b}" ] || \
       git checkout "${b}" ) && \
     git diff | tee "${diff}" && \
@@ -26,14 +26,17 @@ do
     # git pull "${remote}" "${refspec}" && \
     git merge --no-edit --log --verbose "${remote}/${refspec}" && \
     echo -e "\nPushing ${b}" && \
-    git signpush || \
-      ( [ "${#files[@]}" -gt 0 ] && \
-        git rollback "${files[@]}" && \
-        git diff --exit-code && \
-        git signpush --no-verify ) || \
-      ( echo Failed && exit 1 )
+    ( git signpush &&
+      ( [ "${#files[@]}" -eq 0 ] || \
+        git rollback "${files[@]}" ) ) || \
+    ( [ "${#files[@]}" -gt 0 ] && \
+      git rollback "${files[@]}" && \
+      git diff --exit-code && \
+      git signpush --no-verify ) || \
+    ( echo Failed && exit 1 )
     if [ -e "${diff}" ]
     then
       rm -fv "${diff}"
     fi
+    git status
 done
