@@ -12,6 +12,7 @@ done
 remote=${1:-upstream}
 refspec=${2:-develop}
 shift 2
+git fetch "${remote}"
 for b in "${@}"
 do
   diff="diff.${b}"
