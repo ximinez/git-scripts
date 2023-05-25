@@ -20,6 +20,12 @@ _git_checkout;
 _git_rollback() {
 _git_add;
 };
+_git_adddiff() {
+_git_add;
+};
+_git_addiff() {
+_git_add;
+};
 _git_signpush() {
 _git_push;
 };
