@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ $# -le 1 ]]
+then
+  echo Usage: $( basename $0 ) project user [...]
+  exit 1
+fi
+
+project="$1"
+shift
+if [[ "${project}" == "" ]]
+then
+  # Better to specify the name, but if you intentionally specify an
+  # empty name ("" on the command line), it'll use rippled
+  project=rippled
+fi
+
+for u in "${@}"
+do
+  git remote add "${u}" "git@github.com:${u}/${project}.git"
+done
+git fetch --all
+
