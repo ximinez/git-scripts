@@ -36,6 +36,11 @@ else
   branches=( "${@}" )
 fi
 base=$( git merge-base --octopus "${branches[@]}" )
+if [[ "${base}" == "" ]]
+then
+  echo Error: No common ancestor
+  exit 1
+fi
 echo Common ancestor
 git log --oneline -1 "${base}"
 for branch in "${branches[@]}"
