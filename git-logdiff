@@ -1,14 +1,34 @@
 #!/bin/bash
 
-if [[ $# -lt 1 ]]
+remote=$( git rev-parse --abbrev-ref --symbolic-full-name "@{u}" \
+              2>/dev/null )
+push=$( git rev-parse --abbrev-ref --symbolic-full-name "@{push}" \
+              2>/dev/null )
+
+if [[ "$1" == "--help" || $# -lt 1 && "${remote}" == "" && "${push}" == "" ]]
 then
-  echo Usage: $( basename $0 ) branch...
+  echo Usage: $( basename $0 ) [branch...]
   echo
   echo If more than one branch is provided, show history for each branch
-  echo from the common ancestor of all of them. If only one branch is
-  echo provided, show history for each branch from the common ancestor
-  echo of it and the current branch.
+  echo from the common ancestor of all of them.
+  echo
+  echo If only one branch is provided, show history for each branch from
+  echo the common ancestor of it and the current branch.
+  echo
+  echo "If no branches provided, and the branch has remote(s), compare"
+  echo with the remotes. Includes pull and push if they differ.
   exit 1
+elif [[ $# -eq 0 ]]
+then
+  branches=( "${@}" HEAD )
+  for b in "${remote}" "${push}"
+  do
+    if [[ "${b}" != "" ]] && \
+      ! printf '%s\0' "${branches[@]}"  | grep -F -x -z -q -- "${b}"
+    then
+      branches+=( "${b}" )
+    fi
+  done
 elif [[ $# -eq 1 ]]
 then
   branches=( "${@}" HEAD )
