@@ -1,9 +1,12 @@
 #!/bin/bash
 
-branchname=$( git rev-parse --abbrev-ref --symbolic-full-name "@" )
+branch=$( git rev-parse --abbrev-ref --symbolic-full-name "@" )
+remote=$( git rev-parse --abbrev-ref --symbolic-full-name "@{u}" \
+              2>/dev/null )
+push=$( git rev-parse --abbrev-ref --symbolic-full-name "@{push}" \
+              2>/dev/null )
 
-git rev-parse --abbrev-ref --symbolic-full-name "@{u}" > /dev/null 2>&1 &&
-  git fetch || echo New branch
+[[ "${remote}" != "" ]] && git fetch || echo New branch
 
 unset ci
 if [[ "${1}" == "-ci" || "${1}" == "ci" ]]
@@ -16,9 +19,11 @@ git diff --quiet --staged &&
   ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
     ( git push --force-with-lease --force-if-includes "${@}" ||
       git push "${@}" ||
-      git push "${@}" --set-upstream origin "${branchname}" ) &&
+      ( [[ "${remote}" != "" && "${push}" == "" ]] &&
+      echo "Not pushing: ${branch:-???} from ${remote:-???} to ${push:-???}" ) ||
+      git push "${@}" --set-upstream origin "${branch}" ) &&
     ( [[ ! -v ci ]] && exit 0 ||
       git push --force-with-lease --force-if-includes ci
-        "${branchname}":"ed-${branchname}" )
+        "${branch}":"ed-${branch}" )
 # https://developer.atlassian.com/blog/2015/04/force-with-lease/
 
