@@ -297,12 +297,13 @@ then
       && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]]
     then
       echo "$@"
-      if git branch -r | grep -q upstream/develop
+      if git branch -r | grep -q "upstream/develop"
       then
-        compare=$( [ "$1" = "$2" ] && echo "upstream/develop" || echo "$1" )
+        branches=( "$2" "upstream/develop" )
       else
-        compare="$1"
+        branches=( "$1" "$2" )
       fi
+      compare=$( git merge-base --octopus "${branches[@]}" )
       echo -e "\nFormatting files changed since $compare"
       # In Windows confirm the correct path to your LLVM install. But note
       # that there are incompatibilities with the Windows version so you
