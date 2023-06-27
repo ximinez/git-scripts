@@ -7,19 +7,16 @@ then
   z40=0000000000000000000000000000000000000000
   while read local_ref local_sha remote_ref remote_sha
   do
-      echo "local_ref ${local_ref}"
-      echo "local_sha ${local_sha}"
-      echo "remote_ref ${remote_ref}"
-      echo "remote_sha ${remote_sha}"
       if [ "${remote_sha}" = ${z40} ]
       then
-          # new branch
-          start="FETCH_HEAD"
+        # new branch
+        branches=( "FETCH_HEAD" "${local_ref}" )
       else
-          start="${remote_sha}"
+        branches=( "${remote_sha}" "${local_ref}" )
       fi
-      echo "Checking formatting of files changed since ${start}"
-      git-clang-format --extensions c,cpp,h,cxx,ipp "${start}"
+      compare=$( git merge-base --octopus "${branches[@]}" )
+      echo "Checking formatting of files changed since ${compare}"
+      git-clang-format --extensions c,cpp,h,cxx,ipp "${compare}"
   done
 
   # Only uncomment the following line if you want to aggressively ensure
