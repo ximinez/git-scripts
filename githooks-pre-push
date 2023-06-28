@@ -11,6 +11,9 @@ then
       then
         # new branch
         branches=( "FETCH_HEAD" "${local_ref}" )
+      elif git branch -r | grep -q "upstream/develop"
+      then
+        branches=( "upstream/develop" "${local_ref}" )
       else
         branches=( "${remote_sha}" "${local_ref}" )
       fi
