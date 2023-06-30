@@ -138,13 +138,9 @@ then
       pushd ${repo} > >( tee -a $logfile )
       echo Compilers: ${compilers[@]} | tee -a $logfile
       echo Build types: ${build_types[@]} | tee -a $logfile
+      conan_profiles=()
       for c in "${compilers[@]}"
       do
-        # conan_types=( "${build_types[@]}" )
-        # if [[ "${#conan_types[@]}" -le 1 && -z "${conan_types[0]}" ]]
-        # then
-          # conan_types=( "Debug" "Release" )
-        # fi
         for debug in "${build_types[@]}"
         do
           buildparam=()
@@ -168,24 +164,35 @@ then
             for conanbuild in "${conan_types[@]}"
             do
               profile=()
+              unset tracker
               for search in "${c}${conanbuild}" "${c}Release" "${c}" "default"
               do
                 if conan profile list | grep -qw "${search}"
                 then
+                  tracker="${tooldir}${conanbuild}${search}"
                   profile+=( -pr "${search}" )
                   break
                 fi
               done
-              _run mkdir -pv "build/${tooldir}"
-              cmd=( conan install .
-                --output-folder "build/${tooldir}"
-                --build missing
-                -s build_type="${conanbuild}"
-                "${profile[@]}" )
-              echo "Run: ${cmd[@]}" |& tee -a $logfile
-              "${cmd[@]}" |& tee -a $logfile |& \
-                  awk '{printf "."}'
-              echo | tee -a $logfile
+              if [[ "${tracker}" == "" ]] || \
+                ! printf '%s\0' "${conan_profiles[@]}" \
+                  | grep -F -x -z -q -- "${tracker}"
+              then
+                _run mkdir -pv "build/${tooldir}"
+                cmd=( conan install .
+                  --output-folder "build/${tooldir}"
+                  --build missing
+                  -s build_type="${conanbuild}"
+                  "${profile[@]}" )
+                echo "Run: ${cmd[@]}" |& tee -a $logfile
+                "${cmd[@]}" |& tee -a $logfile |& \
+                    awk '{printf "."}'
+                echo | tee -a $logfile
+                if [[ "${tracker}" != "" ]]
+                then
+                  conan_profiles+=( "${tracker}" )
+                fi
+              fi
             done
             buildparam+=(
             "-DCMAKE_TOOLCHAIN_FILE=../../${tooldir}/build/generators/conan_toolchain.cmake" )
