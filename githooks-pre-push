@@ -7,16 +7,24 @@ then
   z40=0000000000000000000000000000000000000000
   while read local_ref local_sha remote_ref remote_sha
   do
+      echo "local_ref ${local_ref}"
+      echo "local_sha ${local_sha}"
+      echo "remote_ref ${remote_ref}"
+      echo "remote_sha ${remote_sha}"
       if [ "${remote_sha}" = ${z40} ]
       then
         # new branch
         branches=( "FETCH_HEAD" "${local_ref}" )
-      elif git branch -r | grep -q "upstream/develop"
-      then
-        branches=( "upstream/develop" "${local_ref}" )
       else
         branches=( "${remote_sha}" "${local_ref}" )
+        compare=$( git merge-base --octopus "${branches[@]}" )
+        if false && [[ "${compare}" != "${remote_sha}" ]] && \
+          git branch -r | grep -q "upstream/develop"
+        then
+          branches=( "upstream/develop" "${local_ref}" )
+        fi
       fi
+      echo "Get common ancestor of ${branches[@]}"
       compare=$( git merge-base --octopus "${branches[@]}" )
       echo "Checking formatting of files changed since ${compare}"
       git-clang-format --extensions c,cpp,h,cxx,ipp "${compare}"
