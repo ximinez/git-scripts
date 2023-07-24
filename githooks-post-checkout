@@ -113,14 +113,15 @@ then
     if [[ -e conanfile.py ]]
     then
       conan=1
-      declare -A conanextra
-      conanextra["external/snappy"]="snappy/1.1.90@"
       for exp in external/*/conanfile.py
       do
         if [[ -f "${exp}" ]]
         then
           exp=$( dirname "${exp}" )
-          cmd=( conan export "${exp}" "${conanextra[${exp}]}" )
+          name=$( basename "${exp}" )
+          extra=$( grep "${name}/" conanfile.py | \
+            sed "s/.*'${name}\/\(.*\)'.*/\1@/" | head -1 )
+          cmd=( conan export "${exp}" "${extra}" )
           echo "Run: ${cmd[@]}" |& tee -a $logfile
           "${cmd[@]}" |& tee -a $logfile
         fi
