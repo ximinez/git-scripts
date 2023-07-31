@@ -8,12 +8,12 @@ fi
 
 for dir in "${search[@]}"
 do
-	if [ -d ${dir}/.git ] 
-	then
-		echo $dir 
-		pushd $dir > /dev/null 
-		git fetch --all -p
-		popd > /dev/null 
-	fi 
+  if [ -d ${dir}/.git ]
+  then
+    echo $dir
+    pushd $dir > /dev/null
+    git fetch --all -p --jobs=$(nproc)
+    popd > /dev/null
+  fi
 done
 

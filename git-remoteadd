@@ -19,5 +19,5 @@ for u in "${@}"
 do
   git remote add "${u}" "git@github.com:${u}/${project}.git"
 done
-git fetch --all
+git fetch --jobs=$(nproc) --multiple "${@}"
 
