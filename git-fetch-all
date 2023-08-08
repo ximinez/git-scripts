@@ -12,8 +12,9 @@ do
   then
     echo $dir
     pushd $dir > /dev/null
-    git fetch --all -p --jobs=$(nproc)
+    git fetch --all -p --jobs=$(nproc) &
     popd > /dev/null
   fi
 done
-
+jobs
+wait
