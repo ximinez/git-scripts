@@ -179,9 +179,10 @@ then
                 ! printf '%s\0' "${conan_profiles[@]}" \
                   | grep -F -x -z -q -- "${tracker}"
               then
-                _run mkdir -pv "build/${tooldir}"
-                cmd=( conan install .
-                  --output-folder "build/${tooldir}"
+                pushd build > >( tee -a $logfile )
+                _run mkdir -pv "${tooldir}"
+                cmd=( conan install ..
+                  --output-folder "${tooldir}"
                   --build missing
                   -s build_type="${conanbuild}"
                   "${profile[@]}" )
@@ -193,6 +194,7 @@ then
                 then
                   conan_profiles+=( "${tracker}" )
                 fi
+                popd > >( tee -a $logfile )
               fi
             done
             buildparam+=(
@@ -283,7 +285,7 @@ then
 
       preset="${repo}/CMakeUserPresets.json"
       if [[ -v conan && -f "${preset}" ]] &&
-        grep -q "${tooldir}..build/generators..CMakePresets.json" "${preset}" &&
+        grep -q "${tooldir}..\?build/generators..\?CMakePresets.json" "${preset}" &&
         [[ $( wc -l "${preset}" | cut -d\  -f1 ) -eq 8 ]]
       then
         _run mv -vf "${preset}" "${preset}.bad"
