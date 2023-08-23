@@ -304,7 +304,8 @@ then
 
     # Reformat on checkout, if the current branch has instructions
     if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-      && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]]
+      && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]] \
+      && [[ ! -f "$( git rev-parse --git-dir )/MERGE_HEAD" ]]
     then
       echo "$@"
       if git branch -r | grep -q "upstream/develop"
