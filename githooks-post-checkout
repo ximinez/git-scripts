@@ -303,9 +303,11 @@ then
       xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
 
     # Reformat on checkout, if the current branch has instructions
+    g=$( git rev-parse --git-dir )
+    b=$( git rev-parse --abbrev-ref HEAD )
     if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-      && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]] \
-      && [[ ! -f "$( git rev-parse --git-dir )/MERGE_HEAD" ]]
+      && [[ ! -f "diff.${b}" && ! -f "${g}/MERGE_HEAD"
+        && ! -d "${g}/rebase-merge" && ! -d "${g}/rebase-apply" ]]
     then
       echo "$@"
       if git branch -r | grep -q "upstream/develop"

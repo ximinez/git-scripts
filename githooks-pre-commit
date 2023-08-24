@@ -3,9 +3,11 @@
 if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
   && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]]
 then
-  git_dir=$( git rev-parse --absolute-git-dir )
+  g=$( git rev-parse --absolute-git-dir )
+  b=$( git rev-parse --abbrev-ref HEAD )
   # If we're not in the middle of a merge, check the index only.
-  if [[ ! -f ${git_dir}/MERGE_HEAD ]] && ! git diff --exit-code --quiet
+  if [[ ! -f ${g}/MERGE_HEAD && ! -d "${g}/rebase-merge" \
+    && ! -d "${g}/rebase-apply" ]] && ! git diff --exit-code --quiet
   then
     stash=true
     git stash push --keep-index --quiet
@@ -26,7 +28,7 @@ then
     code=$?
     # If we're not in the middle of a merge, restore any unstaged changes
     # that were stashed.
-    if [[ ! -f ${git_dir}/MERGE_HEAD && "${stash}" == "true" ]]
+    if [[ ! -f ${g}/MERGE_HEAD && "${stash}" == "true" ]]
     then
       git restore --quiet -- .
       git stash pop --quiet
