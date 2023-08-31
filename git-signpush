@@ -17,13 +17,13 @@ fi
 
 git diff --quiet --staged &&
   ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
-    ( git push --force-with-lease --force-if-includes "${@}" ||
+    ( git push --force-with-lease "${@}" ||
       git push "${@}" ||
       ( [[ "${remote}" != "" && "${push}" == "" ]] &&
       echo "Not pushing: ${branch:-???} from ${remote:-???} to ${push:-???}" ) ||
       git push "${@}" --set-upstream origin "${branch}" ) &&
     ( [[ ! -v ci ]] && exit 0 ||
-      git push --force-with-lease --force-if-includes ci
+      git push --force-with-lease ci
         "${branch}":"ed-${branch}" )
 # https://developer.atlassian.com/blog/2015/04/force-with-lease/
 
