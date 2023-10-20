@@ -18,6 +18,7 @@
 # branches, flag=1) or a file checkout (retrieving a file from the
 # index, flag=0).
 
+set -o pipefail
 
 error()
 {
@@ -121,11 +122,21 @@ then
           name=$( basename "${exp}" )
           extra=$( grep "${name}/" conanfile.py | \
             sed "s/.*'${name}\/\(.*\)'.*/\1@/" | head -1 )
+          search="${name}/${extra}"
+          cmd=( conan search "${search}" )
+          echo "Run: ${cmd[@]}" |& tee -a $logfile
+          if "${cmd[@]}" |& tee -a $logfile
+          then
+            echo "Run: ${search} already exported" |& tee -a $logfile
+            continue
+          fi
           cmd=( conan export "${exp}" "${extra}" )
           echo "Run: ${cmd[@]}" |& tee -a $logfile
           "${cmd[@]}" |& tee -a $logfile
         fi
       done
+
+      conan_profile_list=$( conan profile list )
     fi
     for repo in . $( git config --file .gitmodules --get-regexp path | \
       cut -d\  -f2 )
@@ -150,7 +161,7 @@ then
             tooldir="conan"
             for search in "${c}${debug}" "${c}Release" "${c}"
             do
-              if conan profile list | grep -qw "${search}"
+              if echo "${conan_profile_list}" | grep -qwx "${search}"
               then
                 tooldir+=".${search}"
                 break
@@ -168,7 +179,7 @@ then
               unset tracker
               for search in "${c}${conanbuild}" "${c}Release" "${c}" "default"
               do
-                if conan profile list | grep -qw "${search}"
+                if echo "${conan_profile_list}" | grep -qwx "${search}"
                 then
                   tracker="${tooldir}${conanbuild}${search}"
                   profile+=( -pr "${search}" )
@@ -179,22 +190,31 @@ then
                 ! printf '%s\0' "${conan_profiles[@]}" \
                   | grep -F -x -z -q -- "${tracker}"
               then
-                pushd build > >( tee -a $logfile )
-                _run mkdir -pv "${tooldir}"
-                cmd=( conan install ..
-                  --output-folder "${tooldir}"
-                  --build missing
-                  -s build_type="${conanbuild}"
-                  "${profile[@]}" )
-                echo "Run: ${cmd[@]}" |& tee -a $logfile
-                "${cmd[@]}" |& tee -a $logfile |& \
-                    awk '{printf "."}'
-                echo | tee -a $logfile
-                if [[ "${tracker}" != "" ]]
+                toolchainfile="build/${tooldir}/build/generators/conan_toolchain.cmake"
+                if [[ -f "${toolchainfile}" ]]
                 then
-                  conan_profiles+=( "${tracker}" )
+                  echo "Run: Skipping conan install. Toolchain file exists. ${toolchainfile}" \
+                    | tee -a $logfile
+                  echo "  If dependencies change, wipe build folder and start over." \
+                    | tee -a $logfile
+                else
+                  pushd build > >( tee -a $logfile )
+                  _run mkdir -pv "${tooldir}"
+                  cmd=( conan install ..
+                    --output-folder "${tooldir}"
+                    --build missing
+                    -s build_type="${conanbuild}"
+                    "${profile[@]}" )
+                  echo "Run: ${cmd[@]}" |& tee -a $logfile
+                  "${cmd[@]}" |& tee -a $logfile |& \
+                      awk '{printf "."}'
+                  echo | tee -a $logfile
+                  if [[ "${tracker}" != "" ]]
+                  then
+                    conan_profiles+=( "${tracker}" )
+                  fi
+                  popd > >( tee -a $logfile )
                 fi
-                popd > >( tee -a $logfile )
               fi
             done
             buildparam+=(
@@ -262,6 +282,12 @@ then
             then
               extra+=( "-DOPENSSL_ROOT=$OPENSSL_ROOT" )
             fi
+            if [[ -f "build/cmake/${target}/CMakeCache.txt" ]]
+            then
+              echo "Run: Skipping cmake call in ${target}" | tee -a $logfile
+              echo "  CMakeCache.txt file exists" | tee -a $logfile
+              continue
+            fi
             mkdir -pv build/cmake/${target} | tee -a $logfile
             pushd build/cmake/${target} > >( tee -a $logfile )
             echo -e "\n\n\nTarget: $target" | tee -a $logfile
@@ -294,13 +320,16 @@ then
       popd > >( tee -a $logfile )
     done
 
-    # Update any custom / non-build CMake folders
-    cmd=( find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune
-      -false -o -name CMakeCache.txt -fprintf /dev/stderr
-      "Building cmake in %p\n" -print0 )
-    echo "Run: ${cmd[@]}" | tee -a ${logfile}
-    "${cmd[@]}" 2> >( tee -a ${logfile} 1>&2 ) | \
-      xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
+    if false
+    then
+      # Update any custom / non-build CMake folders
+      cmd=( find . \( -path '*/build/cmake' -o -path '*/.nih_c' \) -prune
+        -false -o -name CMakeCache.txt -fprintf /dev/stderr
+        "Building cmake in %p\n" -print0 )
+      echo "Run: ${cmd[@]}" | tee -a ${logfile}
+      "${cmd[@]}" 2> >( tee -a ${logfile} 1>&2 ) | \
+        xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
+    fi
 
     # Reformat on checkout, if the current branch has instructions
     g=$( git rev-parse --git-dir )
