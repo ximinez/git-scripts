@@ -111,33 +111,36 @@ then
     mkdir -pv build | tee $logfile
     echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n" | tee -a $logfile
     unset conan
-    if [[ -e conanfile.py ]]
-    then
-      conan=1
-      for exp in external/*/conanfile.py
-      do
-        if [[ -f "${exp}" ]]
-        then
-          exp=$( dirname "${exp}" )
-          name=$( basename "${exp}" )
-          extra=$( grep "${name}/" conanfile.py | \
-            sed "s/.*'${name}\/\(.*\)'.*/\1@/" | head -1 )
-          search="${name}/${extra}"
-          cmd=( conan search "${search}" )
-          echo "Run: ${cmd[@]}" |& tee -a $logfile
-          if "${cmd[@]}" |& tee -a $logfile
+    for conanfile in conanfile.*
+    do
+      if [[ -f "${conanfile}" ]]
+      then
+        conan=1
+        for exp in external/*/conanfile.*
+        do
+          if [[ -f "${exp}" ]]
           then
-            echo "Run: ${search} already exported" |& tee -a $logfile
-            continue
+            exp=$( dirname "${exp}" )
+            name=$( basename "${exp}" )
+            extra=$( grep "${name}/" "${conanfile}" | \
+              sed "s/.*'${name}\/\(.*\)'.*/\1@/" | head -1 )
+            search="${name}/${extra}"
+            cmd=( conan search "${search}" )
+            echo "Run: ${cmd[@]}" |& tee -a $logfile
+            if "${cmd[@]}" |& tee -a $logfile
+            then
+              echo "Run: ${search} already exported" |& tee -a $logfile
+              continue
+            fi
+            cmd=( conan export "${exp}" "${extra}" )
+            echo "Run: ${cmd[@]}" |& tee -a $logfile
+            "${cmd[@]}" |& tee -a $logfile
           fi
-          cmd=( conan export "${exp}" "${extra}" )
-          echo "Run: ${cmd[@]}" |& tee -a $logfile
-          "${cmd[@]}" |& tee -a $logfile
-        fi
-      done
+        done
 
-      conan_profile_list=$( conan profile list )
-    fi
+        conan_profile_list=$( conan profile list )
+      fi
+    done
     for repo in . $( git config --file .gitmodules --get-regexp path | \
       cut -d\  -f2 )
     do
@@ -190,18 +193,20 @@ then
                 ! printf '%s\0' "${conan_profiles[@]}" \
                   | grep -F -x -z -q -- "${tracker}"
               then
-                toolchainfile="build/${tooldir}/build/generators/conan_toolchain.cmake"
+                pushd build > >( tee -a $logfile )
+                toolchainfile=$( find "${tooldir}" -iname "conan_toolchain.cmake" )
                 if [[ -f "${toolchainfile}" ]]
                 then
+                  echo "Run: Toolchain file is ${toolchainfile}" | tee -a $logfile
                   echo "Run: Skipping conan install. Toolchain file exists. ${toolchainfile}" \
                     | tee -a $logfile
                   echo "  If dependencies change, wipe build folder and start over." \
                     | tee -a $logfile
                 else
-                  pushd build > >( tee -a $logfile )
                   _run mkdir -pv "${tooldir}"
-                  cmd=( conan install ..
-                    --output-folder "${tooldir}"
+                  pushd "${tooldir}" > >( tee -a $logfile )
+                  cmd=( conan install ../..
+                    --output-folder .
                     --build missing
                     -s build_type="${conanbuild}"
                     "${profile[@]}" )
@@ -214,11 +219,18 @@ then
                     conan_profiles+=( "${tracker}" )
                   fi
                   popd > >( tee -a $logfile )
+                  toolchainfile=$( find "${tooldir}" -iname "conan_toolchain.cmake" )
+                  echo "Run: Toolchain file is ${toolchainfile}" | tee -a $logfile
+                fi
+                popd > >( tee -a $logfile )
+                if [[ ! -f "build/${toolchainfile}" ]]
+                then
+                  echo "Run: Conan did not make a toolchain file" | tee -a $logfile
+                  break
                 fi
               fi
             done
-            buildparam+=(
-            "-DCMAKE_TOOLCHAIN_FILE=../../${tooldir}/build/generators/conan_toolchain.cmake" )
+            buildparam+=( "-DCMAKE_TOOLCHAIN_FILE=../../${toolchainfile}" )
           fi
           if [ ${c} == "msvc22" ]
           then
