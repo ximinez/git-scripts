@@ -231,6 +231,7 @@ then
               fi
             done
             buildparam+=( "-DCMAKE_TOOLCHAIN_FILE=../../${toolchainfile}" )
+            buildparam+=( "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW" )
           fi
           if [ ${c} == "msvc22" ]
           then
