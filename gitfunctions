@@ -17,6 +17,9 @@ _git_checkout;
 _git_checkoutbranch() {
 _git_checkout;
 };
+_git_squash() {
+_git_checkout;
+};
 _git_rollback() {
 _git_add;
 };
