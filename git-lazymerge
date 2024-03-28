@@ -15,7 +15,7 @@ shift 2
 git fetch "${remote}"
 for b in "${@}"
 do
-  diff="diff.${b}"
+  diff="diff.${b/\//.}"
   echo -e "\n\nBegin merge: ${b}\n\n"
   ( [ "$(git rev-parse --abbrev-ref HEAD)" = "${b}" ] || \
       git checkout "${b}" ) && \
