@@ -35,6 +35,7 @@ tmp=$(mktemp)
 find $1 \
   -iname .nih_c -prune -o \
   -iname nih_c -prune -o \
+  -iname _deps -prune -o \
   -iname .git \
   -execdir git rev-parse \; \
   \( \
