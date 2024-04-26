@@ -1,0 +1,44 @@
+# Include this in your main ~/.gitconfig file by adding
+# [include]
+#   path = <path to this file>
+# If you run the `install` script, and it works, the path to this file
+# will be ~/.gitconfig-aliases
+
+[alias]
+  unstage = reset HEAD --
+  undo = checkout --
+  rollback = checkout --
+  needrebase = log --oneline ..upstream/develop
+  sincerebase = log --oneline upstream/develop..
+  alias = "!_() { [ \"$#\" -eq 2 ] && git config --global alias.\"$1\" \"$2\" && exit 0 || echo \"usage: git alias <new alias> <original command>\" >&2 && exit 1; }; _"
+  aliases = "!git config --get-regexp \"alias.*\" | sed \"s/[ ]/ = /\""
+  where = "!_() { git config --get \"alias.${1}\"; }; _"
+  safecommit = commit --verbose
+  fixup = safecommit --fixup=HEAD
+  vmerge = merge --edit --log --verbose
+  adddiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
+  addiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
+  yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
+  checkpoint = "!_() { git commit -m \"[WIP] Checkpoint\" --no-verify . && git signpush --no-verify; }; _"
+  log-files = log --name-status
+  log-10 = log --oneline -10
+  log10 = log --oneline -10
+  undelete = checkout HEAD
+  log-sig = log --show-signature
+  pushf = push --force-with-lease --force-if-includes
+  sdiff = "!git diff && git submodule foreach 'git diff'"
+  spush = push --recurse-submodules=on-demand
+  supdate = submodule update --remote --merge
+  sign = commit --amend --no-edit -p -S
+  retcon = rebase --interactive --autosquash --rebase-merges
+  sstatus = submodule status
+  hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+  stashpull = "!_() { git diff --summary --exit-code && ( git pull ; exit ) || ( git stash --keep-index && git pull && git stash pop ); }; _"
+  checkoutbranch = checkout --track
+  committers = shortlog -ns
+  graphall = log --all --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
+  graph = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
+  head-branch = "!_() { git remote show \"$1\" | awk '/HEAD branch/ {print $NF}'; }; _"
+  squash = "!_() { [ \"$#\" -ge 1 -a \"$#\" -le 2 ] && git fetch origin && git fetch upstream && git checkout \"$1\" && git diff --exit-code && git pull && base=${2:-$( echo \"upstream/$(git head-branch upstream)\")} && git merge --edit --log --verbose \"$base\" && git reset --hard \"$base\" && git merge --squash origin/\"$1\" && git diff --summary --exit-code origin/\"$1\" && git commit --verbose && git push --force-with-lease --no-verify || echo \"usage: git squash <branch> [<base branch>]\" >&2 && exit 1; }; _"
+	lines-changed = diff --compact-summary  upstream/develop
+

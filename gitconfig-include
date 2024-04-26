@@ -1,0 +1,46 @@
+# Include this in your main ~/.gitconfig file by adding
+# [include]
+#   path = <path to this file>
+# If you run the `install` script (and it works) the path to this file
+# will be .gitconfig-include
+#
+# Some of these are just my default preferences. You can override them
+# by setting different values after the `[include]`.
+
+[core]
+  excludesfile = ~/.gitignore_global
+  attributesfile = ~/.gitattributes
+  hookspath = ~/.git/hooks
+[diff]
+  algorithm = patience
+  submodule = log
+[color]
+  ui = auto
+[help]
+  # Immediate
+  # autocorrect = -1
+  # 0.1s delay
+  autocorrect = 1
+[color "branch"]
+    current = green reverse
+    local = cyan
+    remote = white
+[color "diff"]
+  new = green italic
+  old = red strike
+[color "status"]
+  changed = yellow
+  added  = cyan
+[push]
+  default = simple
+[branch "*branch-name*"]
+  rebase = true
+[branch]
+  autosetuprebase = always
+[rerere]
+  enabled = true
+[pull]
+  rebase = true
+[checkout]
+  defaultRemote = origin
+
