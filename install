@@ -9,7 +9,7 @@
 # 3) for %f in (git-* gitfunctions) do mklink C:\Users\passp\bin\%f C:\Dev\git-scripts\%f
 # 4) for %f in (post-checkout post-commit pre-commit pre-push) do mklink C:\Users\passp\.git\hooks\%f C:\Dev\git-scripts\githooks-%f
 
-hookspath=$( git config --global core.hookspath )
+hookspath=$( git config --global --includes core.hookspath )
 if [ -z "${hookspath}" ]
 then
   hookspath=${HOME}/.git/hooks/
@@ -34,6 +34,9 @@ do
   if [[ "${file}" =~ "githooks-" ]]
   then
     dest="${hookspath}/$( echo ${file} | sed 's/^githooks-//' )"
+  elif [[ "${file}" =~ "gitconfig-" ]]
+  then
+    dest="${HOME}/.${file}"
   else
     dest="${HOME}/bin/${file}"
   fi
