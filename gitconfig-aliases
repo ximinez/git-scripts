@@ -16,11 +16,13 @@
   safecommit = commit --verbose
   fixup = safecommit --fixup=HEAD
   vmerge = merge --edit --log --verbose
+  addall = add --verbose --patch --update
   adddiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
   addiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
   yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
   checkpoint = "!_() { git commit -m \"[WIP] Checkpoint\" --no-verify . && git signpush --no-verify; }; _"
   log-files = log --name-status
+  logol = log --oneline
   log-10 = log --oneline -10
   log10 = log --oneline -10
   undelete = checkout HEAD
