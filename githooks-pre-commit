@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-  && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD)" ]]
+  && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD | sed 's/\//./g')" ]]
 then
   g=$( git rev-parse --absolute-git-dir )
   b=$( git rev-parse --abbrev-ref HEAD )

@@ -30,9 +30,9 @@ error()
 _run()
 {
   # Usage: _run: command
-  echo -en "\nRun: ${@} " |& tee -a "${logfile}"
-  date |& tee -a "${logfile}"
-  ( time ${@} ) |& tee -a "${logfile}"
+  echo -en "\nRun: ${@} " 2>&1 | tee -a "${logfile}"
+  date 2>&1 | tee -a "${logfile}"
+  ( time ${@} ) 2>&1 | tee -a "${logfile}"
 }
 
 # Only do these validations on a branch checkout, which includes `git
@@ -96,10 +96,15 @@ then
       fi
     done
     unset cas
-    [[ ! -v prefix ]] || \
+    [[ -z "${prefix}" ]] || \
       cmake_prefix_path="-DCMAKE_PREFIX_PATH=${prefix}"
   else
-    compilers=( "gcc" "clang" )
+    if [[ "$( type -p gcc )" -ef "$( type -p clang )" ]]
+    then
+      compilers=( "clang" )
+    else
+      compilers=( "gcc" "clang" )
+    fi
     build_types=( "Debug" "Release" )
   fi
 
@@ -126,15 +131,15 @@ then
               sed "s/.*'${name}\/\(.*\)'.*/\1@/" | head -1 )
             search="${name}/${extra}"
             cmd=( conan search "${search}" )
-            echo "Run: ${cmd[@]}" |& tee -a $logfile
-            if "${cmd[@]}" |& tee -a $logfile
+            echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
+            if "${cmd[@]}" 2>&1 | tee -a $logfile
             then
-              echo "Run: ${search} already exported" |& tee -a $logfile
+              echo "Run: ${search} already exported" 2>&1 | tee -a $logfile
               continue
             fi
             cmd=( conan export "${exp}" "${extra}" )
-            echo "Run: ${cmd[@]}" |& tee -a $logfile
-            "${cmd[@]}" |& tee -a $logfile
+            echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
+            "${cmd[@]}" 2>&1 | tee -a $logfile
           fi
         done
 
@@ -159,7 +164,7 @@ then
         for debug in "${build_types[@]}"
         do
           buildparam=()
-          if [[ -v conan ]]
+          if [[ "${conan}" ]]
           then
             tooldir="conan"
             for search in "${c}${debug}" "${c}Release" "${c}"
@@ -210,8 +215,8 @@ then
                     --build missing
                     -s build_type="${conanbuild}"
                     "${profile[@]}" )
-                  echo "Run: ${cmd[@]}" |& tee -a $logfile
-                  "${cmd[@]}" |& tee -a $logfile |& \
+                  echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
+                  "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1 | \
                       awk '{printf "."}'
                   echo | tee -a $logfile
                   if [[ "${tracker}" != "" ]]
@@ -276,9 +281,9 @@ then
             then
               extra+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache" )
             fi
-            [[ ! -v postgres ]] || \
+            [[ -z "${postgres}" ]] || \
               extra+=( "${postgres}" )
-            [[ ! -v cmake_prefix_path ]] || \
+            [[ -z "${cmake_prefix_path}" ]] || \
               extra+=( "${cmake_prefix_path}" )
             if [ -z "${debug}"  -o "${debug}" == "unified" ]
             then
@@ -313,8 +318,8 @@ then
             extra+=( "-Dwerr=ON" )
             extra+=( "../../.." )
             cmd=( cmake "${extra[@]}" )
-            echo "Run: ${cmd[@]}" |& tee -a $logfile
-            "${cmd[@]}" |& tee -a $logfile |& awk '{printf "."}'
+            echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
+            "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1 | awk '{printf "."}'
             echo | tee -a $logfile
             set +x
             popd > >( tee -a $logfile )
@@ -323,7 +328,7 @@ then
       done
 
       preset="${repo}/CMakeUserPresets.json"
-      if [[ -v conan && -f "${preset}" ]] &&
+      if [[ -n "${conan}" && -f "${preset}" ]] &&
         grep -q "${tooldir}..\?build/generators..\?CMakePresets.json" "${preset}" &&
         [[ $( wc -l "${preset}" | cut -d\  -f1 ) -eq 8 ]]
       then
@@ -340,15 +345,16 @@ then
         -false -o -name CMakeCache.txt -fprintf /dev/stderr
         "Building cmake in %p\n" -print0 )
       echo "Run: ${cmd[@]}" | tee -a ${logfile}
-      "${cmd[@]}" 2> >( tee -a ${logfile} 1>&2 ) | \
-        xargs -r0 -n1 -P4 cmake |& tee -a $logfile |& awk '{printf "."}' && echo
+      "${cmd[@]}" 2> >( tee -a ${logfile} 2>&1 ) | \
+        xargs -r0 -n1 -P4 cmake 2>&1 | tee -a $logfile 2>&1 | \
+          awk '{printf "."}' && echo
     fi
 
     # Reformat on checkout, if the current branch has instructions
     g=$( git rev-parse --git-dir )
     b=$( git rev-parse --abbrev-ref HEAD )
     if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-      && [[ ! -f "diff.${b}" && ! -f "${g}/MERGE_HEAD"
+      && [[ ! -f "diff.${b/\//.}" && ! -f "${g}/MERGE_HEAD"
         && ! -d "${g}/rebase-merge" && ! -d "${g}/rebase-apply" ]]
     then
       echo "$@"
