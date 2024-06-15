@@ -48,7 +48,7 @@ find $1 \
   \)
 
 rm -f "${tmp}"
-if [[ -v verbose ]]
+if [[ -n "${verbose}" ]]
 then
   echo Done
 fi

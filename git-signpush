@@ -22,7 +22,7 @@ git diff --quiet --staged &&
       ( [[ "${remote}" != "" && "${push}" == "" ]] &&
       echo "Not pushing: ${branch:-???} from ${remote:-???} to ${push:-???}" ) ||
       git push "${@}" --set-upstream origin "${branch}" ) &&
-    ( [[ ! -v ci ]] && exit 0 ||
+    ( [[ -z "${ci}" ]] && exit 0 ||
       git push --force-with-lease ci
         "${branch}":"ed-${branch}" )
 # https://developer.atlassian.com/blog/2015/04/force-with-lease/
