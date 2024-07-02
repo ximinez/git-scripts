@@ -5,9 +5,10 @@
 # Windows doesn't like to make symbolic links without jumping through
 # hoops. Here are the hoops:
 # 1) Open cmd.exe as Administrator
-# 2) cd to this repo directory (examples assume it's C:\Dev\git-scripts)
-# 3) for %f in (git-* gitfunctions) do mklink C:\Users\passp\bin\%f C:\Dev\git-scripts\%f
-# 4) for %f in (post-checkout post-commit pre-commit pre-push) do mklink C:\Users\passp\.git\hooks\%f C:\Dev\git-scripts\githooks-%f
+# 2) cd to this repo directory (examples assume it's %userprofile%\Dev\git-scripts)
+# 3) for %f in (git-* gitfunctions) do mklink %userprofile%\bin\%f %userprofile%\Dev\git-scripts\%f
+# 4) for %f in (gitconfig-*) do mklink %userprofile%\.%f %userprofile%\Dev\git-scripts\%f
+# 5) for %f in (post-checkout post-commit pre-commit pre-push) do mklink %userprofile%\.git\hooks\%f %userprofile%\Dev\git-scripts\githooks-%f
 
 hookspath=$( git config --global --includes core.hookspath )
 if [ -z "${hookspath}" ]
