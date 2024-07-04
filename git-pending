@@ -3,12 +3,6 @@
 # Searching for .git without checking type handles git worktrees.
 # TODO: Make the ignore list a param, but for now this works.
 
-if [[ $1 == "-v" ]]
-then
-  verbose=1
-  shift
-fi
-
 if [[ $1 == "--remote" ]]
 then
   shift
@@ -30,22 +24,44 @@ then
   exit 0
 fi
 
+if [[ $1 == "-v" ]]
+then
+  verbose=1
+  shift
+fi
+
 tmp=$(mktemp)
 
-find $1 \
+search=( "$@" )
+depth=()
+remote=( -execdir $0 --remote "${tmp}" \; -o )
+print=( -printf "%h\n" )
+status=( -execdir git status -s -b \; )
+if [[ $1 == "--current" ]]
+then
+  search=( "." )
+  depth=( -maxdepth 1 )
+  remote=()
+  print=( -printf "\n" )
+  status=( -execdir git status -s -b --untracked-files=no \; )
+  shift
+fi
+
+find "${search[@]}" \
+  "${depth[@]}" \
   -iname .nih_c -prune -o \
   -iname nih_c -prune -o \
   -iname _deps -prune -o \
   -iname .git \
   -execdir git rev-parse \; \
   \( \
-    -execdir $0 --remote "${tmp}" \; \
-    -o \
-    -printf "%h\n" \
-    -execdir git status -s -b \; \
+    "${remote[@]}" \
+    "${print[@]}" \
+    "${status[@]}" \
     -execdir git diff --check \; \
-    -exec echo \; \
-  \)
+    -printf "\n" \
+  \) \
+  -prune
 
 rm -f "${tmp}"
 if [[ -n "${verbose}" ]]
