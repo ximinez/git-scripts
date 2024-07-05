@@ -26,7 +26,8 @@ then
       fi
       echo "Get common ancestor of ${branches[@]}"
       compare=$( git merge-base --octopus "${branches[@]}" )
-      echo "Checking formatting of files changed since ${compare}"
+      echo "Checking formatting of files changed since ${compare}:"
+      git log -1 ${compare} | head -10
       git-clang-format --extensions c,cpp,h,cxx,ipp "${compare}"
   done
 

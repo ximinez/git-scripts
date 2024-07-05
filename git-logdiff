@@ -5,9 +5,10 @@ remote=$( git rev-parse --abbrev-ref --symbolic-full-name "@{u}" \
 push=$( git rev-parse --abbrev-ref --symbolic-full-name "@{push}" \
               2>/dev/null )
 
-if [[ "$1" == "--help" || $# -lt 1 && "${remote}" == "" && "${push}" == "" ]]
+if [[ "$1" == "--help" || "$1" == "-h" || \
+  $# -lt 1 && "${remote}" == "" && "${push}" == "" ]]
 then
-  echo Usage: $( basename $0 ) [branch...]
+  echo Usage: $( basename $0 ) [git-log-options...] [branch...]
   echo
   echo If more than one branch is provided, show history for each branch
   echo from the common ancestor of all of them.
@@ -17,8 +18,24 @@ then
   echo
   echo "If no branches provided, and the branch has remote(s), compare"
   echo with the remotes. Includes pull and push if they differ.
+  echo
+  echo "git-log-options must be provided as '--option=value' or"
+  echo "'-o=value' format to include a value. Otherwise 'value'"
+  echo "will be detected as a branch"
   exit 1
-elif [[ $# -eq 0 ]]
+fi
+
+logopts=( --oneline --reverse --first-parent )
+while [[ $# -ge 1 && "${1:0:1}" == "-" ]]
+do
+  # Assume this is a parameter to "git log"
+  # Must use "--option=value" form. Otherwise "value" will be detected
+  # as a branch
+  logopts+=$1
+  shift
+done
+
+if [[ $# -eq 0 ]]
 then
   branches=( "${@}" HEAD )
   for b in "${remote}" "${push}"
@@ -46,5 +63,5 @@ git log --oneline -1 "${base}"
 for branch in "${branches[@]}"
 do
   echo -e "\n-- ${branch}"
-  git --no-pager log --oneline --reverse "${base}..${branch}"
+  git --no-pager log "${logopts[@]}" "${base}..${branch}"
 done
