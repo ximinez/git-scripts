@@ -3,8 +3,15 @@
 # Searching for .git without checking type handles git worktrees.
 # TODO: Make the ignore list a param, but for now this works.
 
-if [[ $1 == "--remote" ]]
+# echo Start
+
+if [[ $1 == "--diff" ]]
 then
+  # This sub-process will exit with non-0 if there are any interesting
+  # differences, a bit like "git diff"
+  #
+  # set -x
+  # pwd
   shift
   [[ $# == 1 ]] || exit 1
   tmp=$1
@@ -21,7 +28,31 @@ then
   # If there are no problems, succeeds, so continue.
   # If there are problems, fails, so exit with a failure.
   git diff --check >& /dev/null || exit 1
+  # There are no interesting differences, exit with success
   exit 0
+fi
+
+if [[ $1 == "--worktree" ]]
+then
+  # This sub-process will exit with non-0 if this is a valid git work
+  # tree. Additionally, if it is a bare git folder, will output `git
+  # worktree list`.
+  #
+  # set -x
+  # pwd
+  shift
+  [[ $# == 1 ]] || exit 1
+  tmp=$1
+  shift
+  # If in a valid git dir, succeeds, so exit with non-0
+  # If in an invalid git dir, fails, so continue
+  git rev-parse --is-bare-repository >& "${tmp}" || exit 0
+  if [[ $( cat "${tmp}" ) == "true" ]]
+  then
+    echo
+    git worktree list
+  fi
+  exit 1
 fi
 
 if [[ $1 == "-v" ]]
@@ -34,14 +65,15 @@ tmp=$(mktemp)
 
 search=( "$@" )
 depth=()
-remote=( -execdir $0 --remote "${tmp}" \; -o )
+diff=( -execdir $0 --diff "${tmp}" \; -o )
 print=( -printf "%h\n" )
 status=( -execdir git status -s -b \; )
 if [[ $1 == "--current" ]]
 then
   search=( "." )
   depth=( -maxdepth 1 )
-  remote=()
+  # Default diff suppresses output if this is in a valid work dir
+  diff=( -execdir $0 --worktree "${tmp}" \; -o )
   print=( -printf "\n" )
   status=( -execdir git status -s -b --untracked-files=no \; )
   shift
@@ -55,16 +87,18 @@ find "${search[@]}" \
   -iname .git \
   -execdir git rev-parse \; \
   \( \
-    "${remote[@]}" \
+    "${diff[@]}" \
     "${print[@]}" \
     "${status[@]}" \
     -execdir git diff --check \; \
     -printf "\n" \
   \) \
-  -prune
+  -prune # || echo -e "\n\nTmp:" && cat "${tmp}"
 
 rm -f "${tmp}"
 if [[ -n "${verbose}" ]]
 then
   echo Done
 fi
+
+# echo End
