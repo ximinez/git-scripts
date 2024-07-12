@@ -316,6 +316,8 @@ then
             # I like asserts
             extra+=( "-Dassert=true" )
             extra+=( "-Dwerr=ON" )
+            extra+=( "-Dxrpld=ON" )
+            extra+=( "-Dtests=ON" )
             extra+=( "../../.." )
             cmd=( cmake "${extra[@]}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
