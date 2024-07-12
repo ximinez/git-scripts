@@ -33,8 +33,34 @@ then
     echo "Can't parse origin URL: ${origin}" >&2
     exit 1
   fi
-  _run git remote add upstream "https://${server}/${user}/${repo}"
-  _run git remote add upstream-push "${remote}:${user}/${repo}"
+  upstream="https://${server}/${user}/${repo}"
+  upstreampush="${remote}:${user}/${repo}"
+  current=$( git remote get-url upstream 2>/dev/null )
+  currentpush=$( git remote get-url upstream-push 2>/dev/null )
+  if [[ "${current}" == "${upstream}" ]]
+  then
+    echo "Upstream already set up. Skip"
+  elif [[ -n "${current}" && "${current}" != "${upstream}" ]]
+  then
+    echo "Upstream already set up as: ${current}. Skip"
+  else
+    if [[ "${current}" == "${upstreampush}" ]]
+    then
+      echo "Upstream set to dangerous push URL. Update."
+      _run git remote rename upstream upstream-push
+    fi
+    _run git remote add upstream "${upstream}"
+  fi
+
+  if [[ "${currentpush}" == "${upstreampush}" ]]
+  then
+    echo "Upstream-push already set up. Skip"
+  elif [[ -n "${currentpush}" && "${currentpush}" != "${upstreampush}" ]]
+  then
+    echo "Upstream-push already set up as: ${currentpush}. Skip"
+  else
+    _run git remote add upstream-push "${upstreampush}"
+  fi
   _run git fetch --jobs=$(nproc) --multiple upstream upstream-push
 
   exit 0
