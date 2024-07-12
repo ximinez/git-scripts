@@ -1,8 +1,48 @@
 #!/bin/bash
 
+_run()
+{
+  echo "${@}"
+  "${@}"
+}
+
+if [[ "$1" == "--upstream" && $# -eq 2 ]]
+then
+  # Special case: Create upstream remotes based on origin
+  shift
+  user="$1"
+  # Get the origin URL. Expect it be an SSH-style URL
+  origin=$( git remote get-url origin )
+  if [[ "${origin}" == "" ]]
+  then
+    echo Invalid origin remote >&2
+    exit 1
+  fi
+  # echo "Origin: ${origin}"
+  # Parse the origin
+  ifs_orig="${IFS}"
+  IFS=':' read remote originpath <<< "${origin}"
+  # echo "Remote: ${remote}, Originpath: ${originpath}"
+  IFS='@' read sshuser server <<< "${remote}"
+  # echo "SSHUser: ${sshuser}, Server: ${server}"
+  IFS='/' read originuser repo <<< "${originpath}"
+  # echo "Originuser: ${originuser}, Repo: ${repo}"
+  if [[ "${sshuser}" == "" || "${server}" == "" || "${originuser}" == ""
+    || "${repo}" == "" ]]
+  then
+    echo "Can't parse origin URL: ${origin}" >&2
+    exit 1
+  fi
+  _run git remote add upstream "https://${server}/${user}/${repo}"
+  _run git remote add upstream-push "${remote}:${user}/${repo}"
+  _run git fetch --jobs=$(nproc) --multiple upstream upstream-push
+
+  exit 0
+fi
+
 if [[ $# -le 1 ]]
 then
-  echo Usage: $( basename $0 ) project user [...]
+  echo "Usage: $( basename $0 ) ( --upstream user | project user [...] )"
   exit 1
 fi
 
