@@ -231,7 +231,7 @@ then
                 if [[ ! -f "build/${toolchainfile}" ]]
                 then
                   echo "Run: Conan did not make a toolchain file" | tee -a $logfile
-                  break
+                  break 3
                 fi
               fi
             done
