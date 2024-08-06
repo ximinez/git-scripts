@@ -114,7 +114,20 @@ then
     $(pwd) =~ "_deps" || $(pwd) =~ ".conan" ) ]]
   then
     mkdir -pv build | tee $logfile
-    echo -e "\n\n\n\n\nBuilding cmake in $(pwd)\n\n\n\n\n" | tee -a $logfile
+    projectname=$(  grep -i "^ *project(" CMakeLists.txt | \
+      sed 's/.*project(// ; s/).*//')
+    echo -e "\n\n\n\n\nBuilding cmake ${projectname} in $(pwd)\n\n\n\n\n" \
+      | tee -a $logfile
+    projectparams=()
+    case "${projectname}" in
+      xrpl)
+        # I like asserts
+        projectparams+=( "-Dassert=true" )
+        projectparams+=( "-Dwerr=ON" )
+        projectparams+=( "-Dxrpld=ON" )
+        projectparams+=( "-Dtests=ON" )
+        ;;
+    esac
     unset conan
     for conanfile in conanfile.*
     do
@@ -312,12 +325,8 @@ then
             set -x
             pwd | tee -a $logfile
 
+            extra+=( "${projectparams[@]}" )
             extra+=( "-Dunity=${unity}" )
-            # I like asserts
-            extra+=( "-Dassert=true" )
-            extra+=( "-Dwerr=ON" )
-            extra+=( "-Dxrpld=ON" )
-            extra+=( "-Dtests=ON" )
             extra+=( "../../.." )
             cmd=( cmake "${extra[@]}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
