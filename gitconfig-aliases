@@ -22,9 +22,9 @@
   yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
   checkpoint = "!_() { git commit -m \"[WIP] Checkpoint\" --no-verify . && git signpush --no-verify; }; _"
   log-files = log --name-status
-  logol = log --oneline
-  log-10 = log --oneline -10
-  log10 = log --oneline -10
+  logol = log --oneline --first-parent
+  log-10 = log --oneline -10 --first-parent
+  log10 = log --oneline -10 --first-parent
   undelete = checkout HEAD
   log-sig = log --show-signature
   pushf = push --force-with-lease --force-if-includes
