@@ -41,6 +41,6 @@
   graphall = log --all --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
   graph = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
   head-branch = "!_() { git remote show \"$1\" | awk '/HEAD branch/ {print $NF}'; }; _"
-  squash = "!_() { [ \"$#\" -ge 1 -a \"$#\" -le 2 ] && git fetch origin && git fetch upstream && git checkout \"$1\" && git diff --exit-code && git pull && base=${2:-$( echo \"upstream/$(git head-branch upstream)\")} && git merge --edit --log --verbose \"$base\" && git reset --hard \"$base\" && git merge --squash origin/\"$1\" && git diff --summary --exit-code origin/\"$1\" && git commit --verbose && git push --force-with-lease --no-verify || echo \"usage: git squash <branch> [<base branch>]\" >&2 && exit 1; }; _"
+  squash = "!_() { [ \"$#\" -ge 1 -a \"$#\" -le 2 ] && git checkout \"$1\" && git diff --exit-code && git pull && base=${2:-$( echo \"upstream/$(git head-branch upstream)\")} && parts=( $( echo \"$base\" | sed \"s/[/:]/\\n/\" ) ) && git fetch \"${parts[0]}\" && git merge --edit --log --verbose \"$base\" && git reset --hard \"$base\" && git merge --squash origin/\"$1\" && git diff --summary --exit-code origin/\"$1\" && git commit --verbose && git push --force-with-lease --no-verify || echo \"usage: git squash <branch> [<base branch>]\" >&2 && exit 1; }; _"
 	lines-changed = diff --compact-summary  upstream/develop
 
