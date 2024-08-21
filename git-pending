@@ -64,7 +64,7 @@ then
   # progress. Exit code only indicates errors
   shift
   [[ $# == 0 ]] || exit 1
-  git status | head -1 | grep "in progress"
+  git status | grep "in progress" | head -1
   exit 0
 fi
 
