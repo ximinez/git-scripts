@@ -58,6 +58,16 @@ then
   exit 1
 fi
 
+if [[ $1 == "--progress" ]]
+then
+  # This sub-process will output whether any "unusual" operations are in
+  # progress. Exit code only indicates errors
+  shift
+  [[ $# == 0 ]] || exit 1
+  git status | head -1 | grep "in progress"
+  exit 0
+fi
+
 # set -x
 
 if [[ $1 == "-v" ]]
@@ -80,7 +90,8 @@ then
   # Default interesting suppresses output if this is in a valid work dir
   interesting=( -execdir $0 --worktree "${tmp}" \; -o )
   print=( -printf "\n" )
-  status=( -execdir git status -s -b --untracked-files=no \; )
+  status=( -execdir $0 --progress \; )
+  status+=( -execdir git status -s -b --untracked-files=no \; )
   shift
 fi
 
