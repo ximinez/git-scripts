@@ -34,13 +34,13 @@
 [push]
   default = simple
 [branch "*branch-name*"]
-  rebase = true
+  rebase = merge
 [branch]
   autosetuprebase = always
 [rerere]
   enabled = true
 [pull]
-  rebase = true
+  rebase = merge
 [checkout]
   defaultRemote = origin
 
