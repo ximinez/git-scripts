@@ -40,7 +40,7 @@
 [rerere]
   enabled = true
 [pull]
-  rebase = merge
+  rebase = true
 [checkout]
   defaultRemote = origin
 
