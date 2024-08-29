@@ -34,7 +34,7 @@
 [push]
   default = simple
 [branch "*branch-name*"]
-  rebase = merge
+  rebase = true
 [branch]
   autosetuprebase = always
 [rerere]
