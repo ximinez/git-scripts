@@ -95,7 +95,7 @@ then
   shift
 fi
 
-find "${search[@]}" \
+find -L "${search[@]}" \
   "${depth[@]}" \
   -iname .nih_c -prune -o \
   -iname nih_c -prune -o \
