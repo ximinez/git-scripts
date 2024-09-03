@@ -32,6 +32,12 @@ then
   exit 0
 fi
 
+if [[ $1 == "--git" ]]
+then
+  git rev-parse --git-dir >/dev/null 2>&1
+  exit $?
+fi
+
 if [[ $1 == "--worktree" ]]
 then
   # This sub-process will exit with non-0 if this is a valid git work
@@ -62,6 +68,7 @@ if [[ $1 == "--progress" ]]
 then
   # This sub-process will output whether any "unusual" operations are in
   # progress. Exit code only indicates errors
+  # pwd
   shift
   [[ $# == 0 ]] || exit 1
   git status | grep "in progress" | head -1
@@ -79,6 +86,7 @@ fi
 tmp=$(mktemp)
 
 search=( "$@" )
+conditions=()
 depth=()
 interesting=( -execdir $0 --diff "${tmp}" \; -o )
 print=( -printf "%h\n" )
@@ -86,6 +94,7 @@ status=( -execdir git status -s -b \; )
 if [[ $1 == "--current" ]]
 then
   search=( "." )
+  conditions=( -o -execdir $0 --git \; )
   depth=( -maxdepth 1 )
   # Default interesting suppresses output if this is in a valid work dir
   interesting=( -execdir $0 --worktree "${tmp}" \; -o )
@@ -100,7 +109,7 @@ find -L "${search[@]}" \
   -iname .nih_c -prune -o \
   -iname nih_c -prune -o \
   -iname _deps -prune -o \
-  -iname .git \
+  \( -iname .git "${conditions[@]}" \) \
   \( \
     "${interesting[@]}" \
     "${print[@]}" \
