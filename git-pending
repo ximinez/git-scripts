@@ -110,6 +110,7 @@ find -L "${search[@]}" \
   -iname nih_c -prune -o \
   -iname _deps -prune -o \
   \( -iname .git "${conditions[@]}" \) \
+  -prune \
   \( \
     "${interesting[@]}" \
     "${print[@]}" \
@@ -117,7 +118,7 @@ find -L "${search[@]}" \
     -execdir git diff --check \; \
     -printf "\n" \
   \) \
-  -prune # || echo -e "\n\nTmp:" && cat "${tmp}"
+  # || echo -e "\n\nTmp:" && cat "${tmp}"
 
 rm -f "${tmp}"
 if [[ -n "${verbose}" ]]
