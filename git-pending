@@ -3,14 +3,15 @@
 # Searching for .git without checking type handles git worktrees.
 # TODO: Make the ignore list a param, but for now this works.
 
-if [[ $1 == "-v" ]]
-then
-  verbose=1
-  shift
-fi
+# echo Start
 
-if [[ $1 == "--remote" ]]
+if [[ $1 == "--diff" ]]
 then
+  # This sub-process will exit with non-0 if there are any interesting
+  # differences, a bit like "git diff"
+  #
+  # set -x
+  # pwd
   shift
   [[ $# == 1 ]] || exit 1
   tmp=$1
@@ -27,28 +28,102 @@ then
   # If there are no problems, succeeds, so continue.
   # If there are problems, fails, so exit with a failure.
   git diff --check >& /dev/null || exit 1
+  # There are no interesting differences, exit with success
   exit 0
+fi
+
+if [[ $1 == "--git" ]]
+then
+  git rev-parse --git-dir >/dev/null 2>&1
+  exit $?
+fi
+
+if [[ $1 == "--worktree" ]]
+then
+  # This sub-process will exit with non-0 if this is a valid git work
+  # tree. Additionally, if it is a bare git folder, will output `git
+  # worktree list`.
+  #
+  # set -x
+  # pwd
+  shift
+  [[ $# == 1 ]] || exit 1
+  tmp=$1
+  shift
+  # If in a valid git dir, succeeds, so continue
+  # If in an invalid git dir, fails, so exit with 0
+  git rev-parse --is-bare-repository >& "${tmp}" || exit 0
+  if [[ $( cat "${tmp}" ) == "true" ]]
+  then
+    # This is a bare repo. Show any interesting working trees
+    echo
+    git worktree list | grep -v "(bare)"
+    exit 0
+  fi
+  # This is a valid work tree, so exit with non-0
+  exit 1
+fi
+
+if [[ $1 == "--progress" ]]
+then
+  # This sub-process will output whether any "unusual" operations are in
+  # progress. Exit code only indicates errors
+  # pwd
+  shift
+  [[ $# == 0 ]] || exit 1
+  git status | grep -e "in progress" -e "You have" -e "you are" | head -1
+  exit 0
+fi
+
+# set -x
+
+if [[ $1 == "-v" ]]
+then
+  verbose=1
+  shift
 fi
 
 tmp=$(mktemp)
 
-find $1 \
+search=( "$@" )
+conditions=()
+depth=()
+interesting=( -execdir $0 --diff "${tmp}" \; -o )
+print=( -printf "%h\n" )
+status=( -execdir git status -s -b \; )
+if [[ $1 == "--current" ]]
+then
+  search=( "." )
+  conditions=( -o -execdir $0 --git \; )
+  depth=( -maxdepth 1 )
+  # Default interesting suppresses output if this is in a valid work dir
+  interesting=( -execdir $0 --worktree "${tmp}" \; -o )
+  print=( -printf "\n" )
+  status=( -execdir $0 --progress \; )
+  status+=( -execdir git status -s -b --untracked-files=no \; )
+  shift
+fi
+
+find -L "${search[@]}" \
+  "${depth[@]}" \
   -iname .nih_c -prune -o \
   -iname nih_c -prune -o \
   -iname _deps -prune -o \
-  -iname .git \
-  -execdir git rev-parse \; \
+  \( -iname .git "${conditions[@]}" \) \
+  -prune \
   \( \
-    -execdir $0 --remote "${tmp}" \; \
-    -o \
-    -printf "%h\n" \
-    -execdir git status -s -b \; \
+    "${interesting[@]}" \
+    "${print[@]}" \
+    "${status[@]}" \
     -execdir git diff --check \; \
-    -exec echo \; \
-  \)
+    -printf "\n" \
+  \) \
+  # || echo -e "\n\nTmp:" && cat "${tmp}"
 
 rm -f "${tmp}"
-if [[ -v verbose ]]
+if [[ -n "${verbose}" ]]
 then
   echo Done
 fi
+
+# echo End
