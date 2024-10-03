@@ -15,8 +15,10 @@
   where = "!_() { git config --get \"alias.${1}\"; }; _"
   safecommit = commit --verbose
   fixup = safecommit --fixup=HEAD
+  sc = safecommit
   vmerge = merge --edit --log --verbose
   addall = add --verbose --patch --update
+  aa = addall
   adddiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
   addiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
   yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
@@ -45,3 +47,22 @@
   squash = "!_() { [ \"$#\" -ge 1 -a \"$#\" -le 2 ] && git checkout \"$1\" && git diff --exit-code && git pull && base=${2:-$( echo \"upstream/$(git head-branch upstream)\")} && parts=( $( echo \"$base\" | sed \"s/[/:]/\\n/\" ) ) && git fetch \"${parts[0]}\" && git merge --edit --log --verbose \"$base\" && git reset --hard \"$base\" && git merge --squash origin/\"$1\" && git diff --summary --exit-code origin/\"$1\" && git commit --verbose && git push --force-with-lease --no-verify || echo \"usage: git squash <branch> [<base branch>]\" >&2 && exit 1; }; _"
 	lines-changed = diff --compact-summary  upstream/develop
 
+  # Stolen from https://github.com/thejohnfreeman/dotfiles/blob/ubuntu/.gitconfig
+  au = add --update .
+  b = branch
+  ba = branch --all
+  c = commit
+  ca = commit --amend
+  cat = cat-file -p
+  cm = commit --message
+  co = checkout
+  conflicts = !git ls-files -u | cut -f 2 | sort -u
+  cum = commit --only . --message
+  d = diff --stat
+  dc = diff --cached
+  l = log --graph --topo-order --pretty='%C(auto)%h%d %s %Cgreen(%ar)%Creset' -10
+  ls = ls-files
+  pending = "!f() { local r=$1; shift; git diff $(git merge-base HEAD $r) $@; }; f"
+  rc = rebase --continue
+  s = status --short
+  exec = "!exec "
