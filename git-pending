@@ -21,7 +21,7 @@ then
   git status -s -b >& "${tmp}" || exit 0
   # If grep finds matches, succeeds, so exit with a failure.
   # If no matches, succeeds, fails, so continue
-  grep -q -e '\[ahead' -e '\[behind' "${tmp}" && exit 1
+  grep -q -e '\[ahead' -e '\[behind' -e '\[gone' "${tmp}" && exit 1
   # If there are no diffs, succeeds, so continue.
   # If there are diffs, fails, so exit with a failure.
   git diff --quiet >& /dev/null || exit 1
