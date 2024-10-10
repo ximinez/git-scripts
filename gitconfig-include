@@ -20,7 +20,7 @@
   # Immediate
   # autocorrect = -1
   # 0.1s delay
-  autocorrect = 1
+  autocorrect = 10
 [color "branch"]
     current = green reverse
     local = cyan

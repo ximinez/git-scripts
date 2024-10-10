@@ -15,6 +15,7 @@
   where = "!_() { git config --get \"alias.${1}\"; }; _"
   safecommit = commit --verbose
   fixup = safecommit --fixup=HEAD
+  f = fetch
   sc = safecommit
   vmerge = merge --edit --log --verbose
   addall = add --verbose --patch --update
@@ -29,13 +30,16 @@
   log10 = log --oneline -10 --first-parent
   undelete = checkout HEAD
   log-sig = log --show-signature
+  ld = logdiff
+  lf = log-files
   pushf = push --force-with-lease --force-if-includes
-  sdiff = "!git diff && git submodule foreach 'git diff'"
-  spush = push --recurse-submodules=on-demand
-  supdate = submodule update --remote --merge
+  subdiff = "!git diff && git submodule foreach 'git diff'"
+  subpush = push --recurse-submodules=on-demand
+  subupdate = submodule update --remote --merge
   sign = commit --amend --no-edit -p -S
+  sp = signpush
   retcon = rebase --interactive --autosquash --rebase-merges
-  sstatus = submodule status
+  substatus = submodule status
   hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
   stashpull = "!_() { git diff --summary --exit-code && ( git pull ; exit ) || ( git stash --keep-index && git pull && git stash pop ); }; _"
   mergepull = "!_() { git fetch && remote=$( git rev-parse --abbrev-ref --symbolic-full-name \"@{u}\" 2>/dev/null ) && git rebase --rebase-merges \"${remote}\" \"${@}\"; }; _"
