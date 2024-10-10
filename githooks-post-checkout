@@ -365,7 +365,7 @@ then
     g=$( git rev-parse --git-dir )
     b=$( git rev-parse --abbrev-ref HEAD )
     if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-      && [[ ! -f "diff.${b/\//.}" && ! -f "${g}/MERGE_HEAD"
+      && [[ ! -f "diff.${b//\//.}" && ! -f "${g}/MERGE_HEAD"
         && ! -d "${g}/rebase-merge" && ! -d "${g}/rebase-apply" ]]
     then
       echo "$@"
