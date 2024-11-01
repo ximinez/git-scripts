@@ -2,6 +2,7 @@
 
 # upstream=${2:-upstream/develop}
 set -e
+set -o pipefail
 git diff --exit-code || ( echo "Can't rebase with differences" && exit 1 )
 files=()
 while [ -f "$1" ]
@@ -27,13 +28,13 @@ do
     # git pull "${remote}" "${refspec}" && \
     git merge --edit --log --verbose "${remote}/${refspec}" && \
     echo -e "\nPushing ${b}" && \
-    ( git signpush &&
+    ( ( git signpush &&
       ( [ "${#files[@]}" -eq 0 ] || \
         git rollback "${files[@]}" ) ) || \
     ( [ "${#files[@]}" -gt 0 ] && \
       git rollback "${files[@]}" && \
       git diff --exit-code && \
-      git signpush --no-verify ) || \
+      git signpush --no-verify ) ) || \
     ( echo Failed && exit 1 )
   if [ -e "${diff}" ]
   then

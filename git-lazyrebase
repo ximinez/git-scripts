@@ -2,6 +2,7 @@
 
 # upstream=${2:-upstream/develop}
 set -e
+set -o pipefail
 git diff --exit-code || ( echo "Can't rebase with differences" && exit 1 )
 files=()
 while [ -f "$1" ]
