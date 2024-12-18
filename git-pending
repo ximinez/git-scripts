@@ -91,7 +91,7 @@ depth=()
 interesting=( -execdir $0 --diff "${tmp}" \; -o )
 print=( -printf "%h\n" )
 status=( -execdir git status -s -b \; )
-if [[ $1 == "--current" ]]
+if [[ "$1" == "--current" ]]
 then
   search=( "." )
   conditions=( -o -execdir $0 --git \; )
@@ -102,6 +102,11 @@ then
   status=( -execdir $0 --progress \; )
   status+=( -execdir git status -s -b --untracked-files=no \; )
   shift
+elif [[ "$1" == "--all" ]]
+then
+  interesting=()
+  shift
+  search=( "$@" )
 fi
 
 find -L "${search[@]}" \
