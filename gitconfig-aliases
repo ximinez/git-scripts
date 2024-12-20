@@ -54,6 +54,10 @@
   diffr = diff @{upstream}
   dr = d @{upstream}
   dcr = dc @{upstream}
+  mc = merge --continue
+  addconflicts = !git conflictmarkers || git adddiff $( git conflicts )
+  addc = addconflicts
+  conflictmarkers = !grep -rl '<<<<<' $( git ls-files )
 
   # Stolen from https://github.com/thejohnfreeman/dotfiles/blob/ubuntu/.gitconfig
   au = add --update .
