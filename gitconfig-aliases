@@ -45,6 +45,7 @@
   mergepull = "!_() { git fetch && remote=$( git rev-parse --abbrev-ref --symbolic-full-name \"@{u}\" 2>/dev/null ) && git rebase --rebase-merges \"${remote}\" \"${@}\"; }; _"
   checkoutbranch = checkout --track
   cb = checkout -b
+  fork = checkout --no-track -b
   committers = shortlog -ns
   graphall = log --all --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
   graph = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
