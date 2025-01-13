@@ -57,10 +57,10 @@ then
   if [[ "${OS}" =~ "Windows" ]]
   then
     # compilers=( "msvc17" "msvc19" "msvc22" )
-    vsgen="Visual Studio 16 2019"
-    compilers=( "msvc19" )
-    # vsgen="Visual Studio 17 2022"
-    # compilers=( "msvc22" )
+    # vsgen="Visual Studio 16 2019"
+    # compilers=( "msvc19" )
+    vsgen="Visual Studio 17 2022"
+    compilers=( "msvc22" )
     build_types=( "" )
 
     if false
