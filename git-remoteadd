@@ -35,9 +35,10 @@ then
   fi
   upstream="https://${server}/${user}/${repo}"
   upstreampush="${remote}:${user}/${repo}"
-  upstreamgroup="upstream upstream-push"
+  upstreamgroup="upstream upstream-push mywork origin"
   current=$( git remote get-url upstream 2>/dev/null )
   currentpush=$( git remote get-url upstream-push 2>/dev/null )
+  currentwork=$( git remote get-url mywork 2>/dev/null )
   currentgroup=$( git config remotes.upstreams )
   if [[ "${current}" == "${upstream}" ]]
   then
@@ -67,6 +68,16 @@ then
     _run git remote add upstream-push "${upstreampush}"
   fi
 
+  if [[ "${currentwork}" == "${upstreampush}" ]]
+  then
+    echo "Mywork already set up correctly. Skip"
+  elif [[ -n "${currentwork}" && "${currentwork}" != "${upstreampush}" ]]
+  then
+    echo "Mywork already set up as: ${currentwork}. Skip"
+  else
+    _run git remote add mywork "${upstreampush}"
+  fi
+
   if [[ "${currentgroup}" == "${upstreamgroup}" ]]
   then
     echo "Upstreams group already set up correctly. Skip"
@@ -74,7 +85,7 @@ then
   then
     echo "Upstreams group already set up as: ${currentgroup}. Skip"
   else
-    _run git config --add remotes.upstreams "upstream upstream-push"
+    _run git config --add remotes.upstreams "${upstreamgroup}"
   fi
 
   _run git fetch --jobs=$(nproc) upstreams
