@@ -341,8 +341,8 @@ then
 
       preset="${repo}/CMakeUserPresets.json"
       if [[ -n "${conan}" && -f "${preset}" ]] &&
-        grep -q "${tooldir}..\?build/generators..\?CMakePresets.json" "${preset}" &&
-        [[ $( wc -l "${preset}" | cut -d\  -f1 ) -eq 8 ]]
+        grep -q -e "${tooldir}..\?build/generators..\?CMakePresets.json" "${preset}" \
+            -e "windows-base"
       then
         _run mv -vf "${preset}" "${preset}.bad"
       fi
