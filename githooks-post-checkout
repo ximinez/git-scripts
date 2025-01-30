@@ -213,13 +213,20 @@ then
                   | grep -F -x -z -q -- "${tracker}"
               then
                 pushd build > >( tee -a $logfile )
-                toolchainfile=$( find "${tooldir}" -iname "conan_toolchain.cmake" )
-                if [[ -f "${toolchainfile}" ]]
+                markerfilename="conan_toolchain.marker.${conanbuild}"
+                markerfile=$( find "${tooldir}" -iname "${markerfilename}" )
+                toolchainfile=$( find "${tooldir}" -iname \
+                  "conan_toolchain.cmake" )
+                if [[ -f "${toolchainfile}" && -f "${markerfile}" ]]
                 then
-                  echo "Run: Toolchain file is ${toolchainfile}" | tee -a $logfile
-                  echo "Run: Skipping conan install. Toolchain file exists. ${toolchainfile}" \
+                  echo "Run: Toolchain file is ${toolchainfile}, and" \
+                    "build marker file is ${markerfile}" \
                     | tee -a $logfile
-                  echo "  If dependencies change, wipe build folder and start over." \
+                  echo "Run: Skipping conan install. Toolchain files" \
+                    "exist. ${toolchainfile}, ${markerfile}" \
+                    | tee -a $logfile
+                  echo "Run:  If dependencies change, wipe build folder" \
+                    "and start over." \
                     | tee -a $logfile
                 else
                   _run mkdir -pv "${tooldir}"
@@ -238,8 +245,16 @@ then
                     conan_profiles+=( "${tracker}" )
                   fi
                   popd > >( tee -a $logfile )
-                  toolchainfile=$( find "${tooldir}" -iname "conan_toolchain.cmake" )
-                  echo "Run: Toolchain file is ${toolchainfile}" | tee -a $logfile
+                  toolchainfile=$( find "${tooldir}" -iname \
+                    "conan_toolchain.cmake" )
+                  echo "Run: Toolchain file is ${toolchainfile}" \
+                    | tee -a $logfile
+                  cmd=(
+                    touch
+                    "$( dirname "${toolchainfile}" )/${markerfilename}"
+                  )
+                  echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
+                  "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1
                 fi
                 popd > >( tee -a $logfile )
                 if [[ ! -f "build/${toolchainfile}" ]]
