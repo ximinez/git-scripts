@@ -14,7 +14,11 @@ then
       if [ "${remote_sha}" = ${z40} ]
       then
         # new branch
-        branches=( "FETCH_HEAD" "${local_ref}" )
+        base="upstream/$( git head-branch upstream )" || \
+          base="origin/$( git head-branch origin )" || \
+          ( r=$( git remote | head -1 ) && \
+            base="$r/$( git head-branch $r )" )
+        branches=( "${base}" "${local_ref}" )
       else
         branches=( "${remote_sha}" "${local_ref}" )
         compare=$( git merge-base --octopus "${branches[@]}" )
