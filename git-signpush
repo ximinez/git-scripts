@@ -25,8 +25,9 @@ git diff --quiet --staged &&
   ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
     ( git push --force-with-lease "${@}" ||
       git push "${@}" ||
-      ( [[ "${remote}" != "" && "${push}" == "" ]] &&
-      echo "Not pushing: ${branch:-???} from ${remote:-???} to ${push:-???}" ) ||
+      ( [[ "${remote}" != "" || "${push}" != "" ]] &&
+      echo "Abort: ${branch:-???} from ${remote:-???} to ${push:-???}" ) &&
+      exit 1 ||
       git push "${@}" --set-upstream "${defaultRemote}" "${branch}" ) &&
     ( [[ -z "${ci}" ]] && exit 0 ||
       git push --force-with-lease ci
