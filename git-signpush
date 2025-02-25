@@ -21,13 +21,24 @@ then
   defaultRemote=origin
 fi
 
+# %G?
+# show "G" for a good (valid) signature,
+# "B" for a bad signature,
+# "U" for a good signature with unknown validity,
+# "X" for a good signature that has expired,
+# "Y" for a good signature made by an expired key,
+# "R" for a good signature made by a revoked key,
+# "E" if the signature cannot be checked (e.g. missing key)
+# and "N" for no signature
+validity=$( git log --pretty="%G?" -1 )
+
 git diff --quiet --staged &&
-  ( git verify-commit HEAD || git commit --amend --no-edit -S ) &&
+  ( [[ "${validity}" != "N" ]] || git commit --amend --no-edit -S ) &&
     ( git push --force-with-lease "${@}" ||
       git push "${@}" ||
       ( [[ "${remote}" != "" || "${push}" != "" ]] &&
-      echo "Abort: ${branch:-???} from ${remote:-???} to ${push:-???}" ) &&
-      exit 1 ||
+      echo "Abort: ${branch:-???} from ${remote:-???} to ${push:-???}" &&
+      exit 1 ) ||
       git push "${@}" --set-upstream "${defaultRemote}" "${branch}" ) &&
     ( [[ -z "${ci}" ]] && exit 0 ||
       git push --force-with-lease ci
