@@ -31,6 +31,36 @@ fi
 # "E" if the signature cannot be checked (e.g. missing key)
 # and "N" for no signature
 validity=$( git log --pretty="%G?" -1 )
+echo -n "${validity}: "
+case "${validity}" in
+  G)
+    echo "Good signature"
+    ;;
+  B)
+    echo "BAD SIGNATURE!!!!"
+    ;;
+  U)
+    echo "Good signature, unknown validity"
+    ;;
+  X)
+    echo "Good signature, expired"
+    ;;
+  Y)
+    echo "Good signature, expired key"
+    ;;
+  R)
+    echo "Good signature, revoked key"
+    ;;
+  E)
+    echo "Signature can not be checked"
+    ;;
+  N)
+    echo "No signature"
+    ;;
+  *)
+    echo "UNKNOWN VALIDITY VALUE"
+    ;;
+esac
 
 git diff --quiet --staged &&
   ( [[ "${validity}" != "N" ]] || git commit --amend --no-edit -S ) &&
