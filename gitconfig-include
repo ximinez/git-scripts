@@ -52,10 +52,12 @@
 [push]
         default = simple
         autoSetupRemote = true
-        followTags = true
+        # Pushes tags from other remotes, which isn't what I want if
+        # they have junk
+        # followTags = true
 [fetch]
         prune = true
-        pruneTags = true
+        # pruneTags = true
         all = true
 
 # why the hell not?
