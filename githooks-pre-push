@@ -7,10 +7,15 @@ then
   z40=0000000000000000000000000000000000000000
   while read local_ref local_sha remote_ref remote_sha
   do
+      echo "$0 $@"
       echo "local_ref ${local_ref}"
       echo "local_sha ${local_sha}"
       echo "remote_ref ${remote_ref}"
       echo "remote_sha ${remote_sha}"
+      if [[ "${#branches}" -gt 0 || "${local_ref}" == "(delete)" ]]
+      then
+        continue
+      fi
       if [ "${remote_sha}" = ${z40} ]
       then
         # new branch
