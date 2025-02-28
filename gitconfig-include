@@ -85,6 +85,9 @@
         untrackedCache = true
 [merge]
         # (just 'diff3' if git version < 2.3)
-        conflictstyle = zdiff3
+        # conflictstyle = zdiff3
+        # Until I upgrade one of my older boxes, use diff3, and override
+        # with zdiff3 locally everywhere else
+        conflictstyle = diff3
 [pull]
         rebase = true
