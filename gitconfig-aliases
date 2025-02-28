@@ -44,6 +44,7 @@
   stashpull = "!_() { git diff --summary --exit-code && ( git pull ; exit ) || ( git stash --keep-index && git pull && git stash pop ); }; _"
   mergepull = "!_() { git fetch && remote=$( git rev-parse --abbrev-ref --symbolic-full-name \"@{u}\" 2>/dev/null ) && git rebase --rebase-merges \"${remote}\" \"${@}\"; }; _"
   checkoutbranch = checkout --track
+  cob = checkoutbranch
   cb = checkout -b
   fork = checkout --no-track -b
   committers = shortlog -ns
