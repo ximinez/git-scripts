@@ -66,10 +66,8 @@ git diff --quiet --staged &&
   ( [[ "${validity}" != "N" ]] || git commit --amend --no-edit -S ) &&
     ( git push --force-with-lease "${@}" ||
       git push "${@}" ||
-      ( [[ "${remote}" != "" || "${push}" != "" ]] &&
-      echo "Abort: ${branch:-???} from ${remote:-???} to ${push:-???}" &&
-      exit 1 ) ||
-      git push "${@}" --set-upstream "${defaultRemote}" "${branch}" ) &&
+      ( [[ "${remote}" == "" || "${push}" == "" ]] &&
+      git push "${@}" --set-upstream "${defaultRemote}" "${branch}" ) ) &&
     ( [[ -z "${ci}" ]] && exit 0 ||
       git push --force-with-lease ci
         "${branch}":"ed-${branch}" )

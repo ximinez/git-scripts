@@ -1,17 +1,39 @@
 #!/bin/bash
 
-# Format all files that are different from the remote, committed or not
-if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-  && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD | sed 's/\//./g')" ]]
-then
-  z40=0000000000000000000000000000000000000000
-  while read local_ref local_sha remote_ref remote_sha
-  do
-      echo "$0 $@"
-      echo "local_ref ${local_ref}"
-      echo "local_sha ${local_sha}"
-      echo "remote_ref ${remote_ref}"
-      echo "remote_sha ${remote_sha}"
+z40=0000000000000000000000000000000000000000
+while read local_ref local_sha remote_ref remote_sha
+do
+  echo "$0 $@"
+  echo "local_ref ${local_ref}"
+  echo "local_sha ${local_sha}"
+  echo "remote_ref ${remote_ref}"
+  echo "remote_sha ${remote_sha}"
+
+  # Don't allow pushing to remote "mywork" unless the branch name starts
+  # with my username. Only works if the Github CLI is installed
+  if type -t gh 2>&1 >/dev/null
+  then
+    username=$( gh api user --jq ".login" )
+    echo "Pushing to $1 for $username"
+    if [[ -n "${username}" && "$1" == "mywork" ]]
+    then
+      branch=$(
+        git rev-parse --abbrev-ref --symbolic-full-name "${local_ref}"
+      )
+      echo "\tBranch name is ${branch}"
+      if ! [[ "${branch}" =~ ^ximinez/ ]]
+      then
+        echo "\tBad branch name"
+        exit 1
+      fi
+    fi
+  fi
+
+
+  # Format all files that are different from the remote, committed or not
+  if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
+    && [[ ! -f "diff.$(git rev-parse --abbrev-ref HEAD | sed 's/\//./g')" ]]
+  then
       if [[ "${#branches}" -gt 0 || "${local_ref}" == "(delete)" ]]
       then
         continue
@@ -38,14 +60,14 @@ then
       echo "Checking formatting of files changed since ${compare}:"
       git log -1 ${compare} | head -10
       git-clang-format --extensions c,cpp,h,cxx,ipp "${compare}"
-  done
 
-  # Only uncomment the following line if you want to aggressively ensure
-  # that all formatting across the project is correct, and your version
-  # of `clang-format` doesn't have any incompatibilities.
-  # find src/ripple src/test -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 | xargs -0 clang-format -i
+    # Only uncomment the following line if you want to aggressively ensure
+    # that all formatting across the project is correct, and your version
+    # of `clang-format` doesn't have any incompatibilities.
+    # find src/ripple src/test -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 | xargs -0 clang-format -i
 
-  # Comment the following line if you want to let the push complete even if
-  # there are formatting problems.
-  git diff --exit-code
-fi
+    # Comment the following line if you want to let the push complete even if
+    # there are formatting problems.
+    git diff --exit-code
+  fi
+done
