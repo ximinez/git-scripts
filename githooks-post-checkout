@@ -134,7 +134,7 @@ then
     do
       if [[ -f "${conanfile}" ]]
       then
-        conan=1
+        conan=$( conan --version | head -1 | awk '{print $NF}' | cut -d. -f1 )
         for exp in external/*/conanfile.*
         do
           if [[ -f "${exp}" ]]
@@ -142,22 +142,37 @@ then
             exp=$( dirname "${exp}" )
             name=$( basename "${exp}" )
             extra=$( grep "${name}/[0-9.]" "${conanfile}" | \
-              sed "s/.*'${name}\/\([0-9.]*\)'.*/\1@/" | head -1 )
-            search="${name}/${extra}"
-            cmd=( conan search "${search}" )
+              sed "s/.*'${name}\/\([0-9.]*\)'.*/\1/" | head -1 )
+            search="${name}/${extra}@"
+            if [[ $conan -lt 2 ]]
+            then
+              cmd=( conan search "${search}" )
+            else
+              cmd=( conan cache path "${search}" )
+            fi
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
             if "${cmd[@]}" 2>&1 | tee -a $logfile
             then
               echo "Run: ${search} already exported" 2>&1 | tee -a $logfile
               continue
             fi
-            cmd=( conan export "${exp}" "${search}" )
+            if [[ $conan -lt 2 ]]
+            then
+              cmd=( conan export "${exp}" "${search}" )
+            else
+              cmd=( conan export --version "${extra}" "${exp}" )
+            fi
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
             "${cmd[@]}" 2>&1 | tee -a $logfile
           fi
         done
 
-        conan_profile_list=$( conan profile list )
+        if [[ $conan -lt 2 ]]
+        then
+          conan_profile_list=$( conan profile list )
+        else
+          conan_profile_list=$( conan profile list | tail +2 )
+        fi
       fi
     done
     for repo in . $( git config --file .gitmodules --get-regexp path | \
