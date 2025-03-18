@@ -417,7 +417,10 @@ then
 
   if git branch -r | grep -q upstream/develop
   then
-    git log --oneline -1 ..upstream/develop
+    # This format is equivalent to --oneline with the addition of the
+    # signature status "%G?"
+    format='%C(auto)%h %G?%d %s'
+    git log --format="${format}" -1 ..upstream/develop
   fi
 
   b="$(git symbolic-ref HEAD 2>/dev/null)"

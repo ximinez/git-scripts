@@ -8,8 +8,6 @@
   unstage = reset HEAD --
   undo = checkout --
   rollback = checkout --
-  needrebase = log --oneline ..upstream/develop
-  sincerebase = log --oneline upstream/develop..
   alias = "!_() { [ \"$#\" -eq 2 ] && git config --global alias.\"$1\" \"$2\" && exit 0 || echo \"usage: git alias <new alias> <original command>\" >&2 && exit 1; }; _"
   aliases = "!git config --get-regexp \"alias.*\" | sed \"s/[ ]/ = /\""
   where = "!_() { git config --get \"alias.${1}\"; }; _"
@@ -25,9 +23,11 @@
   yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
   checkpoint = "!_() { git commit -m \"[WIP] Checkpoint\" --no-verify . && git signpush --no-verify; }; _"
   log-files = log --name-status
-  logol = log --oneline --first-parent
-  log-10 = log --oneline -10 --first-parent
-  log10 = log --oneline -10 --first-parent
+  logol = log --format='%C(auto)%h %G?%d %s' --first-parent
+  log-10 = log10
+  log10 = logol -10
+  needrebase = logol ..upstream/develop
+  sincerebase = logol upstream/develop..
   undelete = checkout HEAD
   log-sig = log --show-signature
   ld = logdiff

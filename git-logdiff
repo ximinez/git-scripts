@@ -25,7 +25,10 @@ then
   exit 1
 fi
 
-logopts=( --oneline --reverse --first-parent )
+# This format is equivalent to --oneline with the addition of the
+# signature status "%G?"
+format='%C(auto)%h %G?%d %s'
+logopts=( --format="${format}" --reverse --first-parent )
 while [[ $# -ge 1 && "${1:0:1}" == "-" ]]
 do
   # Assume this is a parameter to "git log"
@@ -59,7 +62,7 @@ then
   exit 1
 fi
 echo Common ancestor
-git log --oneline -1 "${base}"
+git log --format="${format}" -1 "${base}"
 for branch in "${branches[@]}"
 do
   echo -e "\n-- ${branch}"
