@@ -53,7 +53,8 @@
         renames = true
 [push]
         default = simple
-        autoSetupRemote = true
+        # Doesn't always use the desired remote
+        # autoSetupRemote = true
         # Pushes tags from other remotes, which isn't what I want if
         # they have junk
         # followTags = true
