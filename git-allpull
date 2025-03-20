@@ -6,6 +6,11 @@ for dir in "${@}"
 do
   echo $dir
   pushd $dir || continue
-  git pull
+  git pull ||
+  (
+    branch=$( git rev-parse --abbrev-ref --symbolic-full-name "@" ) &&
+      repo=$( git config "branch.${branch}.remote" ) &&
+      git pull "${repo}"
+  )
   popd
 done
