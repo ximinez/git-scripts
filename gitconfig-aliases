@@ -61,6 +61,8 @@
   addconflicts = !git conflictmarkers || git adddiff $( git conflicts )
   addc = addconflicts
   conflictmarkers = !grep -rl '<<<<<' $( git ls-files )
+  findfile = "!_() { git ls-files | grep \"$@\"; }; _"
+  edit = "!_() { ${EDITOR:-gvim} $( git findfile \"$@\" ); }; _"
 
   # Stolen from https://github.com/thejohnfreeman/dotfiles/blob/ubuntu/.gitconfig
   au = add --update .
