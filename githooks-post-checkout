@@ -109,12 +109,16 @@ then
     build_types=( "Debug" "Release" )
   fi
 
-  logfile="$(pwd)/build/checkout.log"
+  maindir="$(pwd)"
+  builddir="$(dirname $(pwd))/build/$(basename $(pwd))"
+  logfile="${builddir}/checkout.log"
   if [[ -f CMakeLists.txt ]] && \
     [[ ! ( $(pwd) =~ "nih_c" || $(pwd) =~ "build/cmake" || \
     $(pwd) =~ "_deps" || $(pwd) =~ ".conan" ) ]]
   then
-    mkdir -pv build | tee $logfile
+    mkdir -pv "${builddir}" | tee $logfile
+    echo "Building in ${builddir}" | tee -a "${logfile}"
+    echo "Log is in ${logfile}" | tee -a "${logfile}"
     projectname=$(  grep -i "^ *project(" CMakeLists.txt | \
       sed 's/.*project(// ; s/).*//')
     echo -e "\n\n\n\n\nBuilding cmake ${projectname} in $(pwd)\n\n\n\n\n" \
@@ -163,13 +167,17 @@ then
     for repo in . $( git config --file .gitmodules --get-regexp path | \
       cut -d\  -f2 )
     do
+      repobuild="${builddir}/${repo}"
       if [[ ! -d ${repo} || ! -f ${repo}/CMakeLists.txt || \
-        ( -e ${repo}/build && ! -d ${repo}/build ) ]]
+        ( -e "${repobuild}" && ! -d "${repobuild}" ) ]]
       then
         echo "Not running cmake in ${repo}" | tee -a $logfile >&2
         continue
       fi
+      echo -e "\nBuilding ${repo} in ${repobuild}\n" | tee -a "${logfile}"
+      # Starting in original dir
       pushd ${repo} > >( tee -a $logfile )
+      repo=$(pwd)
       echo Compilers: ${compilers[@]} | tee -a $logfile
       echo Build types: ${build_types[@]} | tee -a $logfile
       conan_profiles=()
@@ -212,7 +220,8 @@ then
                 ! printf '%s\0' "${conan_profiles[@]}" \
                   | grep -F -x -z -q -- "${tracker}"
               then
-                pushd build > >( tee -a $logfile )
+                # Starting in $repo
+                pushd "${repobuild}" > >( tee -a $logfile )
                 markerfilename="conan_toolchain.marker.${conanbuild}"
                 markerfile=$( find "${tooldir}" -iname "${markerfilename}" )
                 toolchainfile=$( find "${tooldir}" -iname \
@@ -230,8 +239,9 @@ then
                     | tee -a $logfile
                 else
                   _run mkdir -pv "${tooldir}"
+                  # Starting in $repobuild
                   pushd "${tooldir}" > >( tee -a $logfile )
-                  cmd=( conan install ../..
+                  cmd=( conan install "${repo}"
                     --output-folder .
                     --build missing
                     -s build_type="${conanbuild}"
@@ -244,6 +254,7 @@ then
                   then
                     conan_profiles+=( "${tracker}" )
                   fi
+                  # back to $repobuild
                   popd > >( tee -a $logfile )
                   toolchainfile=$( find "${tooldir}" -iname \
                     "conan_toolchain.cmake" )
@@ -256,8 +267,9 @@ then
                   echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
                   "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1
                 fi
+                # back to $repo
                 popd > >( tee -a $logfile )
-                if [[ ! -f "build/${toolchainfile}" ]]
+                if [[ ! -f "${repobuild}/${toolchainfile}" ]]
                 then
                   echo "Run: Conan did not make a toolchain file" | tee -a $logfile
                   break 3
@@ -329,26 +341,28 @@ then
             then
               extra+=( "-DOPENSSL_ROOT=$OPENSSL_ROOT" )
             fi
-            if [[ -f "build/cmake/${target}/CMakeCache.txt" ]]
+            if [[ -f "${repobuild}/cmake/${target}/CMakeCache.txt" ]]
             then
               echo "Run: Skipping cmake call in ${target}" | tee -a $logfile
               echo "  CMakeCache.txt file exists" | tee -a $logfile
               continue
             fi
-            mkdir -pv build/cmake/${target} | tee -a $logfile
-            pushd build/cmake/${target} > >( tee -a $logfile )
+            mkdir -pv ${repobuild}/cmake/${target} | tee -a $logfile
+            # Starting in $repo
+            pushd ${repobuild}/cmake/${target} > >( tee -a $logfile )
             echo -e "\n\n\nTarget: $target" | tee -a $logfile
             set -x
             pwd | tee -a $logfile
 
             extra+=( "${projectparams[@]}" )
             extra+=( "-Dunity=${unity}" )
-            extra+=( "../../.." )
+            extra+=( "${repo}" )
             cmd=( cmake "${extra[@]}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
             "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1 | awk '{printf "."}'
             echo | tee -a $logfile
             set +x
+            # Back to $repo
             popd > >( tee -a $logfile )
           done
         done
@@ -362,6 +376,7 @@ then
         _run mv -vf "${preset}" "${preset}.bad"
       fi
 
+      # Back to original dir
       popd > >( tee -a $logfile )
     done
 
@@ -374,7 +389,7 @@ then
       echo "Run: ${cmd[@]}" | tee -a ${logfile}
       "${cmd[@]}" 2> >( tee -a ${logfile} 2>&1 ) | \
         xargs -r0 -n1 -P4 cmake 2>&1 | tee -a $logfile 2>&1 | \
-          awk '{printf "."}' && echo
+          awk '{printf "."}' && echo | tee -a "${logfile}"
     fi
 
     # Reformat on checkout, if the current branch has instructions
@@ -384,7 +399,7 @@ then
       && [[ ! -f "diff.${b//\//.}" && ! -f "${g}/MERGE_HEAD"
         && ! -d "${g}/rebase-merge" && ! -d "${g}/rebase-apply" ]]
     then
-      echo "$@"
+      echo "$@" | tee -a "${logfile}"
       if git branch -r | grep -q "upstream/develop"
       then
         branches=( "$2" "upstream/develop" )
@@ -392,7 +407,7 @@ then
         branches=( "$1" "$2" )
       fi
       compare=$( git merge-base --octopus "${branches[@]}" )
-      echo -e "\nFormatting files changed since $compare"
+      echo -e "\nFormatting files changed since $compare" | tee -a "${logfile}"
       # In Windows confirm the correct path to your LLVM install. But note
       # that there are incompatibilities with the Windows version so you
       # may not want to use this hook in Windows.
@@ -406,7 +421,7 @@ then
       #   | xargs -0 clang-format -i
       git-clang-format --diffstat --extensions c,cpp,h,cxx,ipp $compare
     else
-      echo -e "\nNot formatting code"
+      echo -e "\nNot formatting code" | tee -a "${logfile}"
     fi
   fi
 
@@ -427,6 +442,6 @@ then
   b=${b##refs/heads/};
   if [[ "$b" != "" ]]
   then
-    echo -e "\nGit branch ready: $b\n"
+    echo -e "\nGit branch ready: $b\n" | tee -a "${logfile}"
   fi
 fi
