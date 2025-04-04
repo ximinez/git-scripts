@@ -43,6 +43,7 @@
   hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
   stashpull = "!_() { git diff --summary --exit-code && ( git pull ; exit ) || ( git stash --keep-index && git pull && git stash pop ); }; _"
   mergepull = "!_() { git fetch && remote=$( git rev-parse --abbrev-ref --symbolic-full-name \"@{u}\" 2>/dev/null ) && git rebase --rebase-merges \"${remote}\" \"${@}\"; }; _"
+  p = !git pull || git rebase;
   checkoutbranch = checkout --track
   cob = checkoutbranch
   cb = checkout -b
