@@ -71,7 +71,7 @@ then
   # pwd
   shift
   [[ $# == 0 ]] || exit 1
-  git status | grep -e "in progress" -e "You have" -e "you are" \
+  git status | grep -i -e "in progress" -e "you have" -e "you are" \
     -e "detached" | head -1
   exit 0
 fi
