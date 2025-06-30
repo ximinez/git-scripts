@@ -38,6 +38,7 @@
   subupdate = submodule update --remote --merge
   sign = commit --amend --no-edit -p -S
   sp = signpush
+  spnv = signpush --no-verify
   retcon = rebase --interactive --autosquash --rebase-merges
   substatus = submodule status
   hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
