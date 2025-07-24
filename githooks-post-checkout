@@ -117,6 +117,7 @@ then
     $(pwd) =~ "_deps" || $(pwd) =~ ".conan" ) ]]
   then
     mkdir -pv "${builddir}" | tee $logfile
+    tempfile="$( mktemp --tmpdir=${builddir} )"
     echo "Building in ${builddir}" | tee -a "${logfile}"
     echo "Log is in ${logfile}" | tee -a "${logfile}"
     projectname=$(  grep -i "^ *project(" CMakeLists.txt | \
@@ -146,22 +147,24 @@ then
             exp=$( dirname "${exp}" )
             name=$( basename "${exp}" )
             extra=$( grep "${name}/[0-9.]" "${conanfile}" | \
-              sed "s/.*'${name}\/\([0-9.]*\)'.*/\1@/" | head -1 )
+              sed "s/.*'${name}\/\([0-9.]*\)'.*/\1/" | head -1 )
             search="${name}/${extra}"
-            cmd=( conan search "${search}" )
+            cmd=( conan list --out-file "$tempfile" "${search}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
-            if "${cmd[@]}" 2>&1 | tee -a $logfile
+            if "${cmd[@]}" 2>&1 | tee -a $logfile && \
+              cat "${tempfile}" | tee -a $logfile && \
+              [[ $( grep -c ERROR "${tempfile}" ) == 0 ]]
             then
               echo "Run: ${search} already exported" 2>&1 | tee -a $logfile
               continue
             fi
-            cmd=( conan export "${exp}" "${search}" )
+            cmd=( conan export --version "${extra}" "${exp}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
             "${cmd[@]}" 2>&1 | tee -a $logfile
           fi
         done
 
-        conan_profile_list=$( conan profile list )
+        conan_profile_list=$( conan profile list -vquiet )
       fi
     done
     for repo in . $( git config --file .gitmodules --get-regexp path | \
@@ -244,7 +247,7 @@ then
                   cmd=( conan install "${repo}"
                     --output-folder .
                     --build missing
-                    -s build_type="${conanbuild}"
+                    --settings build_type="${conanbuild}"
                     "${profile[@]}" )
                   echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
                   "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1 | \
@@ -423,6 +426,8 @@ then
     else
       echo -e "\nNot formatting code" | tee -a "${logfile}"
     fi
+
+    rm -fv "${tempfile}" 2>&1 | tee -a "${logfile}"
   fi
 
   if [ $# -gt 1 ]
