@@ -12,7 +12,7 @@ params=("${@}")
     ( git checkout -b ${params[0]}--${params[1]} \
       -t ${params[0]}/${params[1]} || \
       git checkout ${params[0]}--${params[1]} ) && \
-      git pull && \
+      ( git pull || git rebase ) && \
         exit 0 || \
 echo "usage: git review <remote> <branch>" >&2 && \
   exit 1
