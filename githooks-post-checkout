@@ -155,7 +155,7 @@ then
               cat "${tempfile}" | tee -a $logfile && \
               [[ $( grep -c ERROR "${tempfile}" ) == 0 ]]
             then
-              echo "Run: ${search} already exported" 2>&1 | tee -a $logfile
+              echo "Run: INFO: ${search} already exported" 2>&1 | tee -a $logfile
               continue
             fi
             cmd=( conan export --version "${extra}" "${exp}" )
@@ -231,13 +231,13 @@ then
                   "conan_toolchain.cmake" )
                 if [[ -f "${toolchainfile}" && -f "${markerfile}" ]]
                 then
-                  echo "Run: Toolchain file is ${toolchainfile}, and" \
+                  echo "Run: INFO: Toolchain file is ${toolchainfile}, and" \
                     "build marker file is ${markerfile}" \
                     | tee -a $logfile
-                  echo "Run: Skipping conan install. Toolchain files" \
+                  echo "Run: INFO: Skipping conan install. Toolchain files" \
                     "exist. ${toolchainfile}, ${markerfile}" \
                     | tee -a $logfile
-                  echo "Run:  If dependencies change, wipe build folder" \
+                  echo "Run: INFO:  If dependencies change, wipe build folder" \
                     "and start over." \
                     | tee -a $logfile
                 else
@@ -261,7 +261,7 @@ then
                   popd > >( tee -a $logfile )
                   toolchainfile=$( find "${tooldir}" -iname \
                     "conan_toolchain.cmake" )
-                  echo "Run: Toolchain file is ${toolchainfile}" \
+                  echo "Run: INFO: Toolchain file is ${toolchainfile}" \
                     | tee -a $logfile
                   cmd=(
                     touch
@@ -274,7 +274,7 @@ then
                 popd > >( tee -a $logfile )
                 if [[ ! -f "${repobuild}/${toolchainfile}" ]]
                 then
-                  echo "Run: Conan did not make a toolchain file" | tee -a $logfile
+                  echo "Run: INFO: Conan did not make a toolchain file" | tee -a $logfile
                   break 3
                 fi
               fi
@@ -346,7 +346,7 @@ then
             fi
             if [[ -f "${repobuild}/cmake/${target}/CMakeCache.txt" ]]
             then
-              echo "Run: Skipping cmake call in ${target}" | tee -a $logfile
+              echo "Run: INFO: Skipping cmake call in ${target}" | tee -a $logfile
               echo "  CMakeCache.txt file exists" | tee -a $logfile
               continue
             fi
