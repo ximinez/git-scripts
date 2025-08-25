@@ -23,6 +23,7 @@
   yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
   checkpoint = "!_() { git commit -m \"[WIP] Checkpoint\" --no-verify . && git signpush --no-verify; }; _"
   log-files = log --name-status
+  logf = log --first-parent
   logol = log --format='%C(auto)%h %G?%d %s' --first-parent
   log-10 = log10
   log10 = logol -10
@@ -64,7 +65,9 @@
   addc = addconflicts
   conflictmarkers = !grep -rl '<<<<<' $( git ls-files )
   findfile = "!_() { git ls-files | grep \"$@\"; }; _"
-  edit = "!_() { ${EDITOR:-gvim} $( git findfile \"$@\" ); }; _"
+  ff = findfile
+  findandedit = "!_() { ${EDITOR:-gvim} $( git findfile \"$@\" ); }; _"
+  fedit = findandedit
   editconflicts = "!_() { ${EDITOR:-gvim} $( git conflicts ); }; _"
 
   # Stolen from https://github.com/thejohnfreeman/dotfiles/blob/ubuntu/.gitconfig
