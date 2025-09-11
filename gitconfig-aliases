@@ -64,7 +64,7 @@
   mc = merge --continue
   addconflicts = !git conflictmarkers || git adddiff $( git conflicts )
   addc = addconflicts
-  conflictmarkers = !grep -rl '<<<<<' $( git ls-files )
+  conflictmarkers = !"_() { set -o pipefail ; grep -Hc '<<<<<' $( git ls-files ) | grep -v ":0$" | uniq; }; _"
   findfile = "!_() { git ls-files | grep \"$@\"; }; _"
   ff = findfile
   findandedit = "!_() { ${EDITOR:-gvim} $( git findfile \"$@\" ); }; _"
