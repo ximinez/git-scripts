@@ -325,6 +325,11 @@ then
             then
               extra+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache" )
             fi
+            if [ -n "$( type -p clang-tidy )" ]
+            then
+              # e.g. clang-tidy --checks="-*,misc-include-cleaner" -fix -p ../current/cmake/clang.Debug.OFF/ $( git findfile Lending )
+              extra+=( "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" )
+            fi
             [[ -z "${postgres}" ]] || \
               extra+=( "${postgres}" )
             [[ -z "${cmake_prefix_path}" ]] || \
