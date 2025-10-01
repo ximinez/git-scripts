@@ -6,7 +6,13 @@ remote=$( git rev-parse --abbrev-ref --symbolic-full-name "@{u}" \
 push=$( git rev-parse --abbrev-ref --symbolic-full-name "@{push}" \
               2>/dev/null )
 
+status=$( git status --short --branch )
 [[ "${remote}" != "" ]] && git fetch || echo New branch
+if [[ $( git status --short --branch ) != "${status}" ]]
+then
+  echo "Warning: Status changed after fetch"
+  exit 1
+fi
 
 unset ci
 if [[ "${1}" == "-ci" || "${1}" == "ci" ]]
