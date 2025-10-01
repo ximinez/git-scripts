@@ -6,7 +6,16 @@ remote=$( git rev-parse --abbrev-ref --symbolic-full-name "@{u}" \
 push=$( git rev-parse --abbrev-ref --symbolic-full-name "@{push}" \
               2>/dev/null )
 
+status="$( git status --short --branch )"
 [[ "${remote}" != "" ]] && git fetch || echo New branch
+statusafter="$( git status --short --branch )"
+if [[ "${statusafter}" != "${status}" ]]
+then
+  echo "Error: Status changed after fetch."
+  echo "Confirm no overwriting of remote commits."
+  diff <( echo "${status}" ) <( echo "${statusafter}" )
+  exit 1
+fi
 
 unset ci
 if [[ "${1}" == "-ci" || "${1}" == "ci" ]]
