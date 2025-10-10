@@ -112,11 +112,13 @@ then
   maindir="$(pwd)"
   builddir="$(dirname $(pwd))/build/$(basename $(pwd))"
   logfile="${builddir}/checkout.log"
+
+  mkdir -pv "${builddir}" | tee $logfile
+
   if [[ -f CMakeLists.txt ]] && \
-    [[ ! ( $(pwd) =~ "nih_c" || $(pwd) =~ "build/cmake" || \
-    $(pwd) =~ "_deps" || $(pwd) =~ ".conan" ) ]]
+    [[ ! ( "$(pwd)" =~ "nih_c" || "$(pwd)" =~ "build/cmake" || \
+    "$(pwd)" =~ "_deps" || "$(pwd)" =~ ".conan" ) ]]
   then
-    mkdir -pv "${builddir}" | tee $logfile
     tempfile="$( mktemp --tmpdir=${builddir} )"
     echo "Building in ${builddir}" | tee -a "${logfile}"
     echo "Log is in ${logfile}" | tee -a "${logfile}"
@@ -132,6 +134,7 @@ then
         projectparams+=( "-Dwerr=ON" )
         projectparams+=( "-Dxrpld=ON" )
         projectparams+=( "-Dtests=ON" )
+        projectparams+=( "-Dvalidator_keys=ON" )
         ;;
     esac
     unset conan
