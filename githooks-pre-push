@@ -18,19 +18,19 @@ do
     branch=$(
       git rev-parse --abbrev-ref --symbolic-full-name "${local_ref}"
     )
-    echo "\tBranch name is ${branch}"
+    echo "---- Branch name is ${branch}"
     if [[ -n "${username}" && "$1" == "mywork" ]]
     then
       if ! [[ "${branch}" =~ ^${username}/ ]]
       then
-        echo -e "\tBad branch name"
+        echo "---- Bad branch name"
         exit 1
       fi
     elif [[ -n "${username}" && "$1" == "origin" ]]
     then
       if [[ "${branch}" =~ ^${username}/ ]]
       then
-        echo -e "\tBad branch name"
+        echo "---- Bad branch name"
         exit 1
       fi
     fi
