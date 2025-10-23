@@ -1,5 +1,7 @@
 #!/bin/bash
 
+head=$( git rev-parse --abbrev-ref --symbolic-full-name "@" \
+              2>/dev/null || echo "HEAD" )
 remote=$( git rev-parse --abbrev-ref --symbolic-full-name "@{u}" \
               2>/dev/null )
 push=$( git rev-parse --abbrev-ref --symbolic-full-name "@{push}" \
@@ -40,7 +42,7 @@ done
 
 if [[ $# -eq 0 ]]
 then
-  branches=( "${@}" HEAD )
+  branches=( "${@}" "${head}" )
   for b in "${remote}" "${push}"
   do
     if [[ "${b}" != "" ]] && \
@@ -51,7 +53,7 @@ then
   done
 elif [[ $# -eq 1 ]]
 then
-  branches=( "${@}" HEAD )
+  branches=( "${@}" "${head}" )
 else
   branches=( "${@}" )
 fi
@@ -61,10 +63,16 @@ then
   echo Error: No common ancestor
   exit 1
 fi
-echo Common ancestor
-git log --format="${format}" -1 "${base}"
-for branch in "${branches[@]}"
-do
-  echo -e "\n-- ${branch}"
-  git --no-pager log "${logopts[@]}" "${base}..${branch}"
-done
+
+logdiff()
+{
+  echo Common ancestor
+  git log --color --format="${format}" -1 "${base}"
+  for branch in "${branches[@]}"
+  do
+    echo -e "\n-- ${branch}"
+    git --no-pager log --color "${logopts[@]}" "${base}..${branch}"
+  done
+}
+
+logdiff | less
