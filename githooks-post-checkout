@@ -134,7 +134,7 @@ then
         projectparams+=( "-Dwerr=ON" )
         projectparams+=( "-Dxrpld=ON" )
         projectparams+=( "-Dtests=ON" )
-        projectparams+=( "-Dvalidator_keys=ON" )
+        # projectparams+=( "-Dvalidator_keys=ON" )
         ;;
     esac
     unset conan
