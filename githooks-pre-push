@@ -15,9 +15,16 @@ do
   then
     username=$( gh api user --jq ".login" )
     echo "Pushing to $1 for $username"
-    branch=$(
-      git rev-parse --abbrev-ref --symbolic-full-name "${local_ref}"
-    )
+    if [[ "$local_ref" == "(delete)" ]]
+    then
+      branch=$(
+        git rev-parse --abbrev-ref --symbolic-full-name "${remote_ref}"
+      )
+    else
+      branch=$(
+        git rev-parse --abbrev-ref --symbolic-full-name "${local_ref}"
+      )
+    fi
     echo "---- Branch name is ${branch}"
     if [[ -n "${username}" && "$1" == "mywork" ]]
     then
