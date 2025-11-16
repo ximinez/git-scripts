@@ -17,7 +17,7 @@
   vmerge = merge --edit --log --verbose
   addall = add --verbose --patch --update
   aa = addall
-  sc = "!_() { git safecommit \"${@}\" || ( git diff --quiet || ( git aa && git safecommit \"${@}\" ) ); }; _"
+  sc = "!_() { git safecommit \"${@}\" || ( git diff --quiet || ( git aa && git diff --quiet && git safecommit \"${@}\" ) ); }; _"
   scaa = sc
   adddiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
   addiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
