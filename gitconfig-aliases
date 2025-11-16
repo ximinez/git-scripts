@@ -67,9 +67,9 @@
   conflictmarkers = !"_() { set -o pipefail ; grep -Hc '<<<<<' $( git ls-files ) | grep -v ":0$" | uniq; }; _"
   findfile = "!_() { git ls-files | grep \"$@\"; }; _"
   ff = findfile
-  findandedit = "!_() { ${EDITOR:-gvim} $( git findfile \"$@\" ); }; _"
+  findandedit = "!_() { ${EDITOR:-gvim -p} $( git findfile \"$@\" ); }; _"
   fedit = findandedit
-  editconflicts = "!_() { ${EDITOR:-gvim} $( git conflicts ); }; _"
+  editconflicts = "!_() { ${EDITOR:-gvim -p} $( git conflicts ); }; _"
 
   # Stolen from https://github.com/thejohnfreeman/dotfiles/blob/ubuntu/.gitconfig
   au = add --update .
