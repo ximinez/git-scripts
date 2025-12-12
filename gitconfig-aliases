@@ -47,6 +47,10 @@
   stashpull = "!_() { git diff --summary --exit-code && ( git pull ; exit ) || ( git stash --keep-index && git pull && git stash pop ); }; _"
   mergepull = "!_() { git fetch && remote=$( git rev-parse --abbrev-ref --symbolic-full-name \"@{u}\" 2>/dev/null ) && git rebase --rebase-merges \"${remote}\" \"${@}\"; }; _"
   p = !git pull || git rebase;
+  recentbranches=branch --sort=-committerdate --list
+  rb=recentbranches
+  recentlogs="!_() { set -f; for b in $( git recentbranches ) ; do if [[ \"$b\" == \"*\" || \"$b\" == \"+\" ]]; then continue; fi; git logf \"${@:---since=1 hour ago}\" $b ; done }; _"
+  rl=recentlogs
   checkoutbranch = checkout --track
   cob = checkoutbranch
   cb = checkout -b
