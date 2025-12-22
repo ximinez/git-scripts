@@ -30,13 +30,13 @@ fi
 # This format is equivalent to --oneline with the addition of the
 # signature status "%G?"
 format='%C(auto)%h %G?%d %s'
-logopts=( --format="${format}" --reverse --first-parent )
+logopts=( --color --format="${format}" --reverse --first-parent )
 while [[ $# -ge 1 && "${1:0:1}" == "-" ]]
 do
   # Assume this is a parameter to "git log"
   # Must use "--option=value" form. Otherwise "value" will be detected
   # as a branch
-  logopts+=$1
+  logopts+=( $1 )
   shift
 done
 
@@ -67,11 +67,11 @@ fi
 logdiff()
 {
   echo Common ancestor
-  git log --color --format="${format}" -1 "${base}"
+  git log "${logopts[@]}" -1 "${base}"
   for branch in "${branches[@]}"
   do
     echo -e "\n-- ${branch}"
-    git --no-pager log --color "${logopts[@]}" "${base}..${branch}"
+    git --no-pager log "${logopts[@]}" "${base}..${branch}"
   done
 }
 
