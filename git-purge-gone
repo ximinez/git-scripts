@@ -11,7 +11,8 @@ do
 	then
 		echo $dir 
 		pushd $dir > /dev/null 
-    for b in $( git branch | awk '{ print $NF }' )
+    for b in $( git for-each-ref --format='%(refname:short)' \
+      --sort=-committerdate refs/heads/ )
     do
       git branch -vv -l "${b}" | grep -q ": gone" && git branch -D "${b}"
     done
