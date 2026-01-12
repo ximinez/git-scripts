@@ -50,7 +50,7 @@
   recentbranches=branch --sort=-committerdate --list
   rb=recentbranches
   recentbranchrefs=for-each-ref --format='%(refname:short)' --sort=-committerdate refs/heads/
-  recentlogs="!_() { set -f; for b in $( git recentbranchrefs ) ; do if [[ \"$b\" == \"*\" || \"$b\" == \"+\" ]]; then continue; fi; git --no-pager logf --exit-code --color --decorate=short \"${@:---since=1 hour ago}\" $b || echo \"\n----------\n\" ; done | less; }; _"
+  recentlogs="!_() { set -f; for b in $( git recentbranchrefs ) ; do if [[ \"$b\" == \"*\" || \"$b\" == \"+\" ]]; then continue; fi; git --no-pager logf --exit-code --color --decorate=short \"${@:---since=1 hour ago}\" $b || echo \"\n$b\n----------\n\" ; done | less; }; _"
   rl=recentlogs
   updateallbranches="!_() { set -f; for b in $( git recentbranchrefs) ; do if [[ \"$b\" == \"*\" || \"$b\" == \"+\" ]]; then continue; fi; remote=$( git config branch.$b.remote ) ; rbranch=$( git config branch.$b.merge ); if [[ \"$remote\" == \"\" || \"$rbranch\" == \"\" ]]; then continue; fi; git fetch $remote $rbranch:$b || continue ; done }; _"
   uab=updateallbranches
