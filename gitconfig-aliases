@@ -19,8 +19,8 @@
   aa = addall
   sc = "!_() { git safecommit \"${@}\" || ( git diff --quiet || ( git aa && git diff --quiet && git safecommit \"${@}\" ) ); }; _"
   scaa = sc
-  adddiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
-  addiff = "!_() { git add ${@} && while test $# -gt 0 -a ! -f \"$1\" ; do shift; done && git diff --staged ${@}; }; _"
+  adddiff = "!_() { files=(); while test $# -gt 0 -a -e \"$1\" ; do files+=( \"$1\" ) ; shift; done &&  git add -v \"${files[@]}\" && git diff --staged \"${@}\" \"${files[@]}\" ; }; _"
+  addiff = adddiff
   yolo = "!_() { git commit --no-verify -m \"[WIP] YOLO!\" . && git push --no-verify; }; _"
   checkpoint = "!_() { git commit -m \"[WIP] Checkpoint\" --no-verify . && git signpush --no-verify; }; _"
   log-files = log --name-status
