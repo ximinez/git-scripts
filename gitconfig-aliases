@@ -80,6 +80,8 @@
   fedit = findandedit
   editconflicts = "!_() { ${EDITOR:-gvim -p} $( git conflicts ); }; _"
 
+  wl = worktree list
+
   # Stolen from https://github.com/thejohnfreeman/dotfiles/blob/ubuntu/.gitconfig
   au = add --update .
   b = branch
