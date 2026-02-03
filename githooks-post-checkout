@@ -320,7 +320,7 @@ then
             buildparam+=( "-DCMAKE_C_COMPILER=${c}" )
             buildparam+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
           fi
-          for unity in ON OFF
+          for unity in OFF
           do
             # echo "c: $c, debug: $debug, unity: $unity" | tee -a $logfile
             extra=( "${buildparam[@]}" )
@@ -339,9 +339,9 @@ then
               extra+=( "${cmake_prefix_path}" )
             if [ -z "${debug}"  -o "${debug}" == "unified" ]
             then
-              target=${c}.${unity}
+              target=${c}
             else
-              target=${c}.${debug}.${unity}
+              target=${c}.${debug}
               extra+=( "-DCMAKE_BUILD_TYPE=${debug}" )
             fi
             if [ -n "${BOOST_ROOT}" ]
@@ -366,7 +366,6 @@ then
             pwd | tee -a $logfile
 
             extra+=( "${projectparams[@]}" )
-            extra+=( "-Dunity=${unity}" )
             extra+=( "${repo}" )
             cmd=( cmake "${extra[@]}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
