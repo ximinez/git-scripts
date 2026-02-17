@@ -18,16 +18,16 @@ then
   shift
   # If in a valid git dir, succeeds, so continue
   # If in an invalid git dir, fails, so exit with success
-  git status -s -b >& "${tmp}" || exit 0
+  git --no-pager status -s -b >& "${tmp}" || exit 0
   # If grep finds matches, succeeds, so exit with a failure.
   # If no matches, succeeds, fails, so continue
   grep -q -e '\[ahead' -e '\[behind' -e '\[gone' "${tmp}" && exit 1
   # If there are no diffs, succeeds, so continue.
   # If there are diffs, fails, so exit with a failure.
-  git diff --quiet >& /dev/null || exit 1
+  git --no-pager diff --quiet >& /dev/null || exit 1
   # If there are no problems, succeeds, so continue.
   # If there are problems, fails, so exit with a failure.
-  git diff --check >& /dev/null || exit 1
+  git --no-pager diff --check >& /dev/null || exit 1
   # There are no interesting differences, exit with success
   exit 0
 fi
@@ -71,7 +71,7 @@ then
   # pwd
   shift
   [[ $# == 0 ]] || exit 1
-  git status | grep -i -e "in progress" -e "you have" -e "you are" \
+  git --no-pager status | grep -i -e "in progress" -e "you have" -e "you are" \
     -e "detached" | head -1
   exit 0
 fi
@@ -91,7 +91,7 @@ conditions=()
 depth=()
 interesting=( -execdir $0 --diff "${tmp}" \; -o )
 print=( -printf "%h\n" )
-status=( -execdir git status -s -b \; )
+status=( -execdir git --no-pager status -s -b \; )
 if [[ "$1" == "--current" ]]
 then
   search=( "." )
@@ -101,7 +101,7 @@ then
   interesting=( -execdir $0 --worktree "${tmp}" \; -o )
   print=( -printf "\n" )
   status=( -execdir $0 --progress \; )
-  status+=( -execdir git status -s -b --untracked-files=no \; )
+  status+=( -execdir git --no-pager status -s -b --untracked-files=no \; )
   shift
 elif [[ "$1" == "--all" ]]
 then
@@ -121,7 +121,7 @@ find -L "${search[@]}" \
     "${interesting[@]}" \
     "${print[@]}" \
     "${status[@]}" \
-    -execdir git diff --check \; \
+    -execdir git --no-pager diff --check \; \
     -printf "\n" \
   \) \
   # || echo -e "\n\nTmp:" && cat "${tmp}"
