@@ -1,0 +1,30 @@
+#!/bin/bash
+
+path=$(git config --includes --global core.hookspath)
+path="${path/#\~\//$HOME/}"
+
+# No failures if a global script is not found
+if [[ "$path" == "" ]]
+then
+  echo No global hooks path
+  exit 0
+fi
+
+cmd="${path}/$( basename $0 )"
+
+if [[ ! -e "$cmd" ]]
+then
+  echo No global $cmd script
+  exit 0
+fi
+
+if [[ "$0" -ef "$cmd" ]]
+then
+  echo Infinite recursion: $0, $cmd
+  exit 0
+fi
+
+echo Calling $cmd
+
+"$cmd" "${@}"
+
