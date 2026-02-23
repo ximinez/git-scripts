@@ -78,7 +78,12 @@
   ff = findfile
   findandedit = "!_() { ${EDITOR:-gvim -p} $( git findfile \"$@\" ); }; _"
   fedit = findandedit
+  grepandedit = "!_() { ${EDITOR:-gvim -p} $( git grep -l \"$@\" ); }; _"
+  gredit = grepandedit
   editconflicts = "!_() { ${EDITOR:-gvim -p} $( git conflicts ); }; _"
+
+  ghrepo = "!_() { git rev-parse --abbrev-ref --symbolic-full-name $1\"@{u}\" | cut -d/ -f1 | xargs git remote get-url | sed -e 's/^[^:]*://' -e 's/.git$//'; }; _"
+  currentbranch = rev-parse --abbrev-ref --symbolic-full-name "@"
 
   wl = worktree list
 
