@@ -62,6 +62,7 @@ then
     vsgen="Visual Studio 17 2022"
     compilers=( "msvc22" )
     build_types=( "" )
+    unity_types=( "ON" "OFF" )
 
     if false
     then
@@ -107,6 +108,7 @@ then
       compilers=( "gcc" "clang" )
     fi
     build_types=( "Debug" "Release" )
+    unity_types=( "" )
   fi
 
   maindir="$(pwd)"
@@ -186,6 +188,7 @@ then
       repo=$(pwd)
       echo Compilers: ${compilers[@]} | tee -a $logfile
       echo Build types: ${build_types[@]} | tee -a $logfile
+      echo Unity types: ${unity_types[@]} | tee -a $logfile
       conan_profiles=()
       for c in "${compilers[@]}"
       do
@@ -273,16 +276,20 @@ then
                   echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
                   "${cmd[@]}" 2>&1 | tee -a $logfile 2>&1
                 fi
+                toolchainfile="${repobuild}/${toolchainfile}"
+                # echo "Pwd: $(pwd), Toolchainfile: $toolchainfile, Markerfile: $markerfile" | tee -a $logfile
+                # ls -l $toolchainfile $markerfile | tee -a $logfile
+
                 # back to $repo
                 popd > >( tee -a $logfile )
-                if [[ ! -f "${repobuild}/${toolchainfile}" ]]
+                if [[ ! -f "${toolchainfile}" ]]
                 then
                   echo "Run: INFO: Conan did not make a toolchain file" | tee -a $logfile
                   break 3
                 fi
               fi
             done
-            buildparam+=( "-DCMAKE_TOOLCHAIN_FILE=../../${toolchainfile}" )
+            buildparam+=( "-DCMAKE_TOOLCHAIN_FILE=${toolchainfile}" )
             buildparam+=( "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW" )
           fi
           if [ ${c} == "msvc22" ]
@@ -320,7 +327,7 @@ then
             buildparam+=( "-DCMAKE_C_COMPILER=${c}" )
             buildparam+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
           fi
-          for unity in ON OFF
+          for unity in "${unity_types[@]}"
           do
             # echo "c: $c, debug: $debug, unity: $unity" | tee -a $logfile
             extra=( "${buildparam[@]}" )
@@ -339,10 +346,17 @@ then
               extra+=( "${cmake_prefix_path}" )
             if [ -z "${debug}"  -o "${debug}" == "unified" ]
             then
-              target=${c}.${unity}
+              target=${c}
             else
-              target=${c}.${debug}.${unity}
+              target=${c}.${debug}
               extra+=( "-DCMAKE_BUILD_TYPE=${debug}" )
+            fi
+            if [[ "${unity}" != "" ]]
+            then
+              # echo -n "Target before: \"${target}\"" | tee -a $logfile
+              target+=.${unity}
+              # echo ", Target after: \"${target}\"" | tee -a $logfile
+              extra+=( "-Dunity=${unity}" )
             fi
             if [ -n "${BOOST_ROOT}" ]
             then
@@ -364,9 +378,10 @@ then
             echo -e "\n\n\nTarget: $target" | tee -a $logfile
             set -x
             pwd | tee -a $logfile
+            # echo "Toolchainfile: ${toolchainfile}" | tee -a $logfile
+            # ls -l "${toolchainfile}" | tee -a $logfile
 
             extra+=( "${projectparams[@]}" )
-            extra+=( "-Dunity=${unity}" )
             extra+=( "${repo}" )
             cmd=( cmake "${extra[@]}" )
             echo "Run: ${cmd[@]}" 2>&1 | tee -a $logfile
