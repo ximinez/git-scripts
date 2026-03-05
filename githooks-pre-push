@@ -62,18 +62,28 @@ do
         branches=( "${base}" "${local_ref}" )
       else
         branches=( "${remote_sha}" "${local_ref}" )
-        compare=$( git merge-base --octopus "${branches[@]}" )
-        if false && [[ "${compare}" != "${remote_sha}" ]] && \
+        if type -t gh 2>&1 >/dev/null && \
+          [[ "$( gh base )" != "" ]]
+        then
+          branches=( $( gh base ) "${local_ref}" )
+        elif false && [[ "${compare}" != "${remote_sha}" ]] && \
           git branch -r | grep -q "upstream/develop"
         then
           branches=( "upstream/develop" "${local_ref}" )
         fi
       fi
-      echo "Get common ancestor of ${branches[@]}"
-      compare=$( git merge-base --octopus "${branches[@]}" )
-      echo "Checking formatting of files changed since ${compare}:"
-      git log -1 ${compare} | head -10
-      git-clang-format --extensions c,cpp,h,cxx,ipp "${compare}"
+      if [[ -e .pre-commit-config.yaml && \
+        -e $( git config core.hookspath )/pre-commit ]] && \
+        type -t pre-commit 2>&1 >/dev/null
+      then
+        pre-commit run -a
+      else
+        echo "Get common ancestor of ${branches[@]}"
+        compare=$( git merge-base --octopus "${branches[@]}" )
+        echo "Checking formatting of files changed since ${compare}:"
+        git log -1 ${compare} | head -10
+        git-clang-format --extensions c,cpp,h,cxx,ipp "${compare}"
+      fi
 
     # Only uncomment the following line if you want to aggressively ensure
     # that all formatting across the project is correct, and your version

@@ -115,7 +115,8 @@ then
   builddir="$(dirname $(pwd))/build/$(basename $(pwd))"
   logfile="${builddir}/checkout.log"
 
-  mkdir -pv "${builddir}" | tee $logfile
+  output=$( mkdir -pv "${builddir}" )
+  echo "${output}" | tee $logfile
 
   if [[ -f CMakeLists.txt ]] && \
     [[ ! ( "$(pwd)" =~ "nih_c" || "$(pwd)" =~ "build/cmake" || \
@@ -421,31 +422,58 @@ then
     # Reformat on checkout, if the current branch has instructions
     g=$( git rev-parse --git-dir )
     b=$( git rev-parse --abbrev-ref HEAD )
-    if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
-      && [[ ! -f "diff.${b//\//.}" && ! -f "${g}/MERGE_HEAD"
+    if [[ ! -f "diff.${b//\//.}" && ! -f "${g}/MERGE_HEAD"
         && ! -d "${g}/rebase-merge" && ! -d "${g}/rebase-apply" ]]
     then
-      echo "$@" | tee -a "${logfile}"
-      if git branch -r | grep -q "upstream/develop"
+      echo -n ".pre-commit-config.yaml "
+      [[ -e .pre-commit-config.yaml ]] && echo found || echo not found
+      hookspath=$( git config core.hookspath )
+      hookspath="${hookspath/#\~\//$HOME/}"
+      echo -n ${hookspath}/pre-commit " "
+      [[ -e "${hookspath}/pre-commit" ]] && echo found || echo not found
+      echo -n "pre-commit type "
+      type -t pre-commit
+
+      if [[ -e .pre-commit-config.yaml && \
+        -e "${hookspath}/pre-commit" ]] && \
+        type -t pre-commit 2>&1 >/dev/null
       then
-        branches=( "$2" "upstream/develop" )
+        # Assume that if there's a pre-commit hook available, it's
+        # configured
+        echo "pre-commit formatting: $@" | tee -a "${logfile}"
+        pre-commit run -a
+      elif [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
+        && [[ ! -f "diff.${b//\//.}" && ! -f "${g}/MERGE_HEAD"
+          && ! -d "${g}/rebase-merge" && ! -d "${g}/rebase-apply" ]]
+      then
+        echo "git-clang-formatting: $@" | tee -a "${logfile}"
+        if type -t gh 2>&1 >/dev/null
+        then
+          branches=( "$2" $( gh base ) )
+        elif git branch -r | grep -q "upstream/develop"
+        then
+          branches=( "$2" "upstream/develop" )
+        else
+          branches=( "$1" "$2" )
+        fi
+        echo -e "Looking for merge base for ${branches[@]}"
+        compare=$( git merge-base --octopus "${branches[@]}" )
+        echo -e "\nFormatting files changed since $compare" | tee -a "${logfile}"
+        # In Windows confirm the correct path to your LLVM install. But note
+        # that there are incompatibilities with the Windows version so you
+        # may not want to use this hook in Windows.
+        llvmpath="/c/Program Files/LLVM/bin/"
+        if [ -d "${llvmpath}" ]
+        then
+          PATH="${llvmpath}:${PATH}"
+        fi
+        # find src/ripple src/test -type f \! -name 'AccountTxPaging.cpp' \( \
+        #   -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 \
+        #   | xargs -0 clang-format -i
+        git-clang-format --diffstat --extensions c,cpp,h,cxx,ipp $compare
       else
-        branches=( "$1" "$2" )
+        echo -e "\nNot formatting code" | tee -a "${logfile}"
       fi
-      compare=$( git merge-base --octopus "${branches[@]}" )
-      echo -e "\nFormatting files changed since $compare" | tee -a "${logfile}"
-      # In Windows confirm the correct path to your LLVM install. But note
-      # that there are incompatibilities with the Windows version so you
-      # may not want to use this hook in Windows.
-      llvmpath="/c/Program Files/LLVM/bin/"
-      if [ -d "${llvmpath}" ]
-      then
-        PATH="${llvmpath}:${PATH}"
-      fi
-      # find src/ripple src/test -type f \! -name 'AccountTxPaging.cpp' \( \
-      #   -name '*.cpp' -o -name '*.h' -o -name '*.ipp' \) -print0 \
-      #   | xargs -0 clang-format -i
-      git-clang-format --diffstat --extensions c,cpp,h,cxx,ipp $compare
     else
       echo -e "\nNot formatting code" | tee -a "${logfile}"
     fi
