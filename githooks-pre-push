@@ -10,10 +10,11 @@ do
   echo "remote_sha ${remote_sha}"
 
   # Don't allow pushing to remote "mywork" unless the branch name starts
-  # with my username. Only works if the Github CLI is installed
+  # with my username or "ripple". Only works if the Github CLI is installed
   if type -t gh 2>&1 >/dev/null
   then
     username=$( gh api user --jq ".login" )
+    ripple="ripple"
     echo "Pushing to $1 for $username"
     if [[ "$local_ref" == "(delete)" ]]
     then
@@ -28,14 +29,14 @@ do
     echo "---- Branch name is ${branch}"
     if [[ -n "${username}" && "$1" == "mywork" ]]
     then
-      if ! [[ "${branch}" =~ ^${username}/ ]]
+      if ! [[ "${branch}" =~ ^${username}/ || "${branch}" =~ ^${ripple}/ ]]
       then
         echo "---- Bad branch name"
         exit 1
       fi
     elif [[ -n "${username}" && "$1" == "origin" ]]
     then
-      if [[ "${branch}" =~ ^${username}/ ]]
+      if [[ "${branch}" =~ ^${username}/ || "${branch}" =~ ^${ripple}/ ]]
       then
         echo "---- Bad branch name"
         exit 1
@@ -72,8 +73,7 @@ do
           branches=( "upstream/develop" "${local_ref}" )
         fi
       fi
-      if [[ -e .pre-commit-config.yaml && \
-        -e $( git config core.hookspath )/pre-commit ]] && \
+      if [[ -e .pre-commit-config.yaml ]] && \
         type -t pre-commit 2>&1 >/dev/null
       then
         pre-commit run -a
