@@ -35,6 +35,7 @@
   undelete = checkout HEAD
   log-sig = log --show-signature
   ld = logdiff
+  ldbase = "!git logdiff $( gh base )"
   lf = log-files
   pushf = push --force-with-lease --force-if-includes
   subdiff = "!git diff && git submodule foreach 'git diff'"
