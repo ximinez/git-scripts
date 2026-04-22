@@ -17,6 +17,8 @@
   fixup = safecommit --fixup=HEAD
   f = fetch
   vmerge = merge --edit --log --verbose
+  vmergebase = "!git vmerge $( gh base )"
+  mergebase = "!git vmerge $( gh base )"
   addall = add --verbose --patch --update
   aa = addall
   sc = "!_() { git safecommit \"${@}\" || ( git diff --quiet || ( git aa && git diff --quiet && git safecommit \"${@}\" ) ); }; _"
