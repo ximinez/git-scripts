@@ -19,9 +19,9 @@ do
   diff="diff.${b//\//.}"
   echo -e "\n\nBegin merge: ${b}\n\n"
   ( [ "$(git rev-parse --abbrev-ref HEAD)" = "${b}" ] || \
-      git checkout "${b}" ) && \
+      git switch "${b}" ) && \
     git diff | tee "${diff}" && \
-    # Undo any changes that may have been done by the checkout
+    # Undo any changes that may have been done by the switch / checkout
     git reset --hard && \
     git pull && \
     # git rebase "${upstream}"

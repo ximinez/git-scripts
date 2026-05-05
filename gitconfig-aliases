@@ -5,10 +5,10 @@
 # will be ~/.gitconfig-aliases
 
 [alias]
-  unstage = reset HEAD --
-  undo = checkout --
-  rollback = checkout --
-  rollbackinteractive = checkout -p --
+  unstage = restore --staged
+  undo = restore
+  rollback = restore
+  rollbackinteractive = restore --patch
   rbi = rollbackinteractive
   alias = "!_() { [ \"$#\" -eq 2 ] && git config --global alias.\"$1\" \"$2\" && exit 0 || echo \"usage: git alias <new alias> <original command>\" >&2 && exit 1; }; _"
   aliases = "!git config --get-regexp \"alias.*\" | sed \"s/[ ]/ = /\""
@@ -34,7 +34,7 @@
   log10 = logol -10
   needrebase = logol ..upstream/develop
   sincerebase = logol upstream/develop..
-  undelete = checkout HEAD
+  undelete = restore --source=HEAD
   log-sig = log --show-signature
   ld = logdiff
   ldbase = "!git logdiff $( gh base )"
@@ -47,6 +47,7 @@
   sp = signpush
   spnv = signpush --no-verify
   retcon = rebase --interactive --autosquash --rebase-merges
+  retconbase = "!git retcon $( gh base )"
   substatus = submodule status
   hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
   stashpull = "!_() { git diff --summary --exit-code && ( git pull ; exit ) || ( git stash --keep-index && git pull && git stash pop ); }; _"
@@ -59,10 +60,17 @@
   rl=recentlogs
   updateallbranches="!_() { set -f; for b in $( git recentbranchrefs) ; do if [[ \"$b\" == \"*\" || \"$b\" == \"+\" ]]; then continue; fi; remote=$( git config branch.$b.remote ) ; rbranch=$( git config branch.$b.merge ); if [[ \"$remote\" == \"\" || \"$rbranch\" == \"\" ]]; then continue; fi; git fetch $remote $rbranch:$b || continue ; done }; _"
   uab=updateallbranches
-  checkoutbranch = checkout --track
-  cob = checkoutbranch
-  cb = checkout -b
-  fork = checkout --no-track -b
+  co = switch
+  sw = switch
+  # switches to the previous branch
+  prev = switch -
+  switchbranch = switch --track
+  checkoutbranch = switchbranch
+  swb = switchbranch
+  cob = switchbranch
+  cb = switch --create
+  fork = switch --no-track --create
+  detach = switch --detach
   committers = shortlog -ns
   graphall = log --all --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
   graph = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%ci) %C(bold blue)<%an>%Creset'
@@ -70,6 +78,7 @@
   squash = "!_() { [ \"$#\" -ge 1 -a \"$#\" -le 2 ] && git checkout \"$1\" && git diff --exit-code && git pull && base=${2:-$( echo \"upstream/$(git head-branch upstream)\")} && parts=( $( echo \"$base\" | sed \"s/[/:]/\\n/\" ) ) && git fetch \"${parts[0]}\" && git merge --edit --log --verbose \"$base\" && git reset --hard \"$base\" && git merge --squash origin/\"$1\" && git diff --summary --exit-code origin/\"$1\" && git commit --verbose && git push --force-with-lease --no-verify || echo \"usage: git squash <branch> [<base branch>]\" >&2 && exit 1; }; _"
 	lines-changed = diff --compact-summary  upstream/develop
   diffr = diff @{upstream}
+  diffbase = "!git diff $( gh base )"
   dr = d @{upstream}
   dcr = dc @{upstream}
   resetr = reset @{upstream}
@@ -98,7 +107,6 @@
   ca = commit --amend
   cat = cat-file -p
   cm = commit --message
-  co = checkout
   conflicts = !git ls-files -u | cut -f 2 | sort -u
   cum = commit --only . --message
   d = diff --stat
