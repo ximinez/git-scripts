@@ -86,6 +86,7 @@
   addconflicts = !git conflictmarkers || git adddiff $( git conflicts )
   addc = addconflicts
   conflictmarkers = !"_() { set -o pipefail ; grep -Hc '<<<<<' $( git ls-files ) | grep -v ":0$" | uniq; }; _"
+  conflictstat = !"git s $( git conflicts )"
   findfile = "!_() { git ls-files | grep \"$@\"; }; _"
   ff = findfile
   findandedit = "!_() { ${EDITOR:-gvim -p} $( git findfile \"$@\" ); }; _"
