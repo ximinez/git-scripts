@@ -18,7 +18,7 @@ then
   shift
   # If in a valid git dir, succeeds, so continue
   # If in an invalid git dir, fails, so exit with success
-  git --no-pager status -s -b >& "${tmp}" || exit 0
+  git --no-pager status --short --branch >& "${tmp}" || exit 0
   # If grep finds matches, succeeds, so exit with a failure.
   # If no matches, succeeds, fails, so continue
   grep -q -e '\[ahead' -e '\[behind' -e '\[gone' "${tmp}" && exit 1
@@ -76,6 +76,17 @@ then
   exit 0
 fi
 
+if [[ $1 == "--sortstatus" ]]
+then
+  # This sub-process will output the short status of the repo sorted
+  # so that changed files are first
+  git --no-pager status --short --branch --untracked-files=no | \
+    head -1
+  git --no-pager status --short --untracked-files=no | \
+    sort --key=1.2r,1
+  exit 0
+fi
+
 # set -x
 
 if [[ $1 == "-v" ]]
@@ -91,7 +102,7 @@ conditions=()
 depth=()
 interesting=( -execdir $0 --diff "${tmp}" \; -o )
 print=( -printf "%h\n" )
-status=( -execdir git --no-pager status -s -b \; )
+status=( -execdir git --no-pager status --short --branch \; )
 if [[ "$1" == "--current" ]]
 then
   search=( "." )
@@ -101,7 +112,7 @@ then
   interesting=( -execdir $0 --worktree "${tmp}" \; -o )
   print=( -printf "\n" )
   status=( -execdir $0 --progress \; )
-  status+=( -execdir git --no-pager status -s -b --untracked-files=no \; )
+  status+=( -execdir $0 --sortstatus \; )
   shift
 elif [[ "$1" == "--all" ]]
 then
