@@ -14,7 +14,7 @@ do
   if type -t gh 2>&1 >/dev/null
   then
     username=$( gh api user --jq ".login" )
-    ripple="ripple"
+    workbranchregex="^(${username}|ripple|staging)/"
     echo "Pushing to $1 for $username"
     if [[ "$local_ref" == "(delete)" ]]
     then
@@ -29,21 +29,21 @@ do
     echo "---- Branch name is ${branch}"
     if [[ -n "${username}" && "$1" == "mywork" ]]
     then
-      if ! [[ "${branch}" =~ ^${username}/ || "${branch}" =~ ^${ripple}/ ]]
+      if ! [[ "${branch}" =~ ${workbranchregex} ]]
       then
         echo "---- Bad branch name"
         exit 1
       fi
     elif [[ -n "${username}" && "$1" == "origin" ]]
     then
-      if [[ "${branch}" =~ ^${username}/ || "${branch}" =~ ^${ripple}/ ]]
+      if [[ "${branch}" =~ ${workbranchregex} ]]
       then
         echo "---- Bad branch name"
         exit 1
       fi
     fi
+    echo "---- Good branch name"
   fi
-
 
   # Format all files that are different from the remote, committed or not
   if [[ -f .clang-format ]] && type -t git-clang-format >& /dev/null \
