@@ -112,7 +112,7 @@ then
   fi
 
   maindir="$(pwd)"
-  builddir="$(dirname $(pwd))/build/$(basename $(pwd))"
+  builddir="build"
   logfile="${builddir}/checkout.log"
 
   output=$( mkdir -pv "${builddir}" )
@@ -338,7 +338,8 @@ then
             fi
             if [ -n "$( type -p clang-tidy )" ]
             then
-              # e.g. clang-tidy --checks="-*,misc-include-cleaner" -fix -p ../current/cmake/clang.Debug.OFF/ $( git findfile Lending )
+              # e.g. clang-tidy --checks="-*,misc-include-cleaner" -fix
+              # -p build/cmake/clang.Debug.OFF/ $( git findfile Lending )
               extra+=( "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" )
             fi
             [[ -z "${postgres}" ]] || \

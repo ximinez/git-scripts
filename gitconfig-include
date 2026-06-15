@@ -33,8 +33,6 @@
   defaultRemote = origin
 [fetch]
   parallel = 0
-[worktree]
-  useRelativePaths = true
 
 # From https://blog.gitbutler.com/how-git-core-devs-configure-git/
 #
