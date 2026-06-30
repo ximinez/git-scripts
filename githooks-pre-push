@@ -76,7 +76,7 @@ do
       if [[ -e .pre-commit-config.yaml ]] && \
         type -t pre-commit 2>&1 >/dev/null
       then
-        pre-commit run -a
+        pre-commit run
       else
         echo "Get common ancestor of ${branches[@]}"
         compare=$( git merge-base --octopus "${branches[@]}" )
