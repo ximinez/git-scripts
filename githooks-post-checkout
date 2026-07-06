@@ -112,7 +112,7 @@ then
   fi
 
   maindir="$(pwd)"
-  builddir="build"
+  builddir="${maindir}/build"
   logfile="${builddir}/checkout.log"
 
   output=$( mkdir -pv "${builddir}" )
