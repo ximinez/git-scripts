@@ -292,6 +292,7 @@ then
             done
             buildparam+=( "-DCMAKE_TOOLCHAIN_FILE=${toolchainfile}" )
             buildparam+=( "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW" )
+            buildparam+=( "-DCMAKE_POLICY_DEFAULT_CMP0111=OLD" )
           fi
           if [ ${c} == "msvc22" ]
           then
@@ -322,26 +323,33 @@ then
             buildparam+=( "-Ax64" )
 
             buildparam+=( "-DCMAKE_GENERATOR_TOOLSET=host=x64" )
+          elif [[ -x /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja ]]
+          then
+            buildparam+=( "-DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja"  )
+            buildparam+=( "-DCMAKE_VERBOSE_MAKEFILE=OFF" )
+            buildparam+=( "-G Ninja" )
           else
             cxx=${c/gcc/g++}
             cxx=${cxx/clang/clang++}
             buildparam+=( "-DCMAKE_C_COMPILER=${c}" )
             buildparam+=( "-DCMAKE_CXX_COMPILER=${cxx}" )
           fi
+
+          if [ -n "$( type -p ccache )" ]
+          then
+            buildparam+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache" )
+          fi
+          if [ -n "$( type -p clang-tidy )" ]
+          then
+            # e.g. clang-tidy --checks="-*,misc-include-cleaner" -fix
+            # -p build/cmake/clang.Debug.OFF/ $( git findfile Lending )
+            buildparam+=( "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" )
+          fi
+
           for unity in "${unity_types[@]}"
           do
             # echo "c: $c, debug: $debug, unity: $unity" | tee -a $logfile
             extra=( "${buildparam[@]}" )
-            if [ -n "$( type -p ccache )" ]
-            then
-              extra+=( "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache" )
-            fi
-            if [ -n "$( type -p clang-tidy )" ]
-            then
-              # e.g. clang-tidy --checks="-*,misc-include-cleaner" -fix
-              # -p build/cmake/clang.Debug.OFF/ $( git findfile Lending )
-              extra+=( "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" )
-            fi
             [[ -z "${postgres}" ]] || \
               extra+=( "${postgres}" )
             [[ -z "${cmake_prefix_path}" ]] || \
