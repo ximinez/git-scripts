@@ -108,7 +108,7 @@
   ca = commit --amend
   cat = cat-file -p
   cm = commit --message
-  conflicts = !git ls-files -u | cut -f 2 | sort -u
+  conflicts = !git ls-files --unmerged --deduplicate | cut -f 2 | sort -u
   cum = commit --only . --message
   d = diff --stat
   dc = diff --cached
